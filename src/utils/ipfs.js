@@ -10,7 +10,7 @@ const client = create({
 
 // THIS FUNCTION MUST BE CALLED WITH YOUR IMAGE 'FILE' BEING PASSED IN AS AN ARGUMENT
 // I SUGGEST PASSING IN A BLOB OF THE FILE OR A DATA URI OBJECT OF AN IMAGE
-export const uploadFileToIPFS = async (file) => {
+export const uploadFileToIPFS = async (file, name, description) => {
   try {
     //1 ADD File to IPFS
     const url = await client.add(file);
@@ -18,12 +18,14 @@ export const uploadFileToIPFS = async (file) => {
 
     //2 ADD Metadata to IPFS
     const metadata = {
-      name: "example name",
-      description: "example description",
+      name: name,
+      description: description,
       image: uploadedImageUrl,
     };
     const metadataRes = await client.add(JSON.stringify(metadata));
     const metaDataUrl = `https://ipfs.infura.io/ipfs/${metadataRes?.path}`;
+
+    console.log(metaDataUrl)
 
     // IF YOU WISH TO PIN YOUR FILE HERE IS THE COMMAND
     // YOU WILL NEED TO ADD AN AUTH HEADER TO YOUR REQUEST IN ORDER TO PIN USING INFURA

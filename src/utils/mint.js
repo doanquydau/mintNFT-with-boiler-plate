@@ -1,3 +1,5 @@
+// import { artifacts } from "truffle";
+
 const NFT = artifacts.require("NFT");
 
 module.exports = async function () {
@@ -5,7 +7,7 @@ module.exports = async function () {
 
   try {
     await nft.mint(
-      "____REPLACE_THIS_WITH_YOUR_METADATA_URL____",
+      "https://bafybeih2uozfrjotubth3wuw44fz6x2y6qnmzrsyyuhq4pjctwz43pq634.ipfs.infura-ipfs.io/",
       "100000000000000000"
     );
     console.log("minted your NFT");
