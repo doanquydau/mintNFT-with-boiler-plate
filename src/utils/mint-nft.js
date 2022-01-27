@@ -1,4 +1,5 @@
 //step 1: You define your variables from .env file
+import Web3 from "web3";
 import Contract from "../truffle/abis/DaudqCoin.json";
 
 const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
@@ -9,13 +10,15 @@ const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
 const PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEYS;
 const GAS_PRICE = process.env.REACT_APP_GAS_PRICE;
 
-const web3 = createAlchemyWeb3(API_URL);
+// const web3 = createAlchemyWeb3(API_URL);
+const web3 = new Web3(new Web3.providers.HttpProvider(API_URL));
 
 export const MintNFT = async (tokenURI) => {
 
     //step 2: Define our contract ABI (Application Binary Interface) & adresses
-    // const contract = require("../artifacts/contracts/MyNFT.sol/MyNFT.json");
-    const contractAddress = "0xb37841a9ea492f940b45771dd9740dfe0e7aacdd";
+    const contractAddress = "0xbC523fb661D91E2b8616750313A81608169dD136"; // BSC-contract
+    // const contractAddress = "0xef23b01628c9a8fe226f2eccec5961147934e12c"; // BSC-contract
+    // const contractAddress = "0xb37841a9ea492f940b45771dd9740dfe0e7aacdd"; // Ethers-contract
     const nftContract = new web3.eth.Contract(Contract.abi, contractAddress);
 
     console.log(nftContract.methods)
@@ -30,7 +33,7 @@ export const MintNFT = async (tokenURI) => {
         'to': contractAddress,
         'nonce': nonce,
         "gasPrice": web3.utils.toHex(Number(GAS_PRICE) * Math.pow(10, 9)),
-        "gasLimit": web3.utils.toHex(100000), // fixed gasLimit
+        "gasLimit": web3.utils.toHex(500000), // fixed gasLimit
         "value": web3.utils.toHex(0), // fixed gasLimit
         'data': nftContract.methods.mintItem(PUBLIC_KEY, tokenURI).encodeABI()
     };
