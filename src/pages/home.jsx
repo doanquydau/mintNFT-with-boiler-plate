@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Web3 from "web3";
 import Web3Modal from "web3modal";
-import Contract from "../truffle/abis/DaudqCoin.json";
+import Contract from "../truffle/abis/DauDQCoin.json";
 import style from "../assets/css/main.css";
 import { ethers } from 'ethers';
 import { uploadFileToIPFS } from '../utils/ipfs.js'
@@ -10,71 +10,12 @@ import { MintNFT } from '../utils/mint-nft.js'
 require('dotenv').config();
 const API_URL = process.env.REACT_APP_API_URL;
 
-const loadContract = async () => {
-  try {
-    //THIS ALLOWS YOU TALK TO BLOCKCHAIN
-    const web3Modal = new Web3Modal({
-      network: "rinkeby", // optional
-      cacheProvider: true, // optional
-      providerOptions: {}, // required
-    });
-    const provider = await web3Modal.connect();
-    const web3 = new Web3(provider);
-    const netId = await web3.eth.net.getId();
-    //THIS WILL LOAD YOUR CONTRACT FROM BLOCKCHAIN
-    console.log(Contract.abi)
-    console.log(netId)
-    const contract = new web3.eth.Contract(
-      Contract.abi,
-      // Contract.networks[netId].address
-      Contract.networks[5777].address,
-      {
-        from: '0x1234567890123456789012345678901234567891', // default from address
-        gasPrice: '20000000000', // default gas price in wei, 20 gwei in this case
-        gas: '50000000'
-      }
-    );
-
-    // GET THE AMOUNT OF NFTs MINTED
-    const totalSupply = await contract.methods.totalSupply().call();
-    console.log(`totalSupply ${totalSupply}`);
-
-    
-    //UNCOMMENT THIS BLOCK ONCE YOU HAVE MINTED AN NFT
-
-        // THE TOKEN ID YOU WANT TO QUERY
-        const tokenID = 1;
-
-        // GET THE TOKEN URI
-        // THE URI IS THE LINK TO WHERE YOUR JSON DATA LIVES
-        const uri = await contract.methods.tokenURI(tokenID).call();
-        console.log(uri);
-
-        // GET THE OWNER OF A SPECIFIC TOKEN
-        const owner = await contract.methods.ownerOf(tokenID).call();
-        console.log(owner);
-
-        // CHECK IF A SPECIFIC TOKEN IS SOLD
-        const sold = await contract.methods.sold(tokenID).call();
-        console.log(sold);
-        
-        // GET PRICE OF A SPECIFIC TOKEN
-        const price = await contract.methods.price(tokenID).call();
-        console.log(price);
-    
-  } catch (e) {
-    console.log("error = ", e);
-  }
-};
-
-
 const Home = () => {
   const [currentAccount, setCurrentAccount] = useState('');
   const [metadataNFT, setMetadataNFT] = useState({});
+  const [txHash, setTxHash] = useState('');
 
   useEffect(async () => {
-    // loadContract();
-
     const { ethereum } = window;
     if (!ethereum) {
       alert('Please install Metamask')
@@ -147,8 +88,10 @@ const Home = () => {
     try {
       console.log(metadataNFT)
       console.log(API_URL)
-      await MintNFT(metadataNFT.metaDataUrl);
-      
+      let result_mint = await MintNFT(metadataNFT.metaDataUrl);
+      if (result_mint.status) {
+        setTxHash(result_mint.transactionHash)
+      }
     } catch (error) {
       console.log(error)
     }
@@ -174,6 +117,8 @@ const Home = () => {
       <p>
         {currentAccount}
       </p>
+      <p>Transaction hash: </p>
+      <p>{txHash}</p>
     </div>
   );
 };

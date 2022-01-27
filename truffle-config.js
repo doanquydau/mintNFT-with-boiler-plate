@@ -1,6 +1,7 @@
 require("dotenv").config();
 const HDWalletProvider = require("@truffle/hdwallet-provider");
-const privateKeys = process.env.PRIVATE_KEYS || "";
+const privateKeys = process.env.REACT_APP_PRIVATE_KEYS || "";
+const INFURA_ID = process.env.REACT_APP_INFURA_ID;
 
 module.exports = {
   networks: {
@@ -18,7 +19,7 @@ module.exports = {
       provider: function () {
         return new HDWalletProvider(
           privateKeys.split(","),
-          `https://kovan.infura.io/v3/${process.env.INFURA_ID}`
+          `https://kovan.infura.io/v3/${INFURA_ID}`
         );
       },
       gas: 5000000,
@@ -30,7 +31,7 @@ module.exports = {
       provider: function () {
         return new HDWalletProvider(
           privateKeys.split(","),
-          `https://rinkeby.infura.io/v3/${process.env.INFURA_ID}`
+          `https://rinkeby.infura.io/v3/${INFURA_ID}`
         );
       },
       gas: 5000000,
@@ -42,7 +43,7 @@ module.exports = {
       provider: function () {
         return new HDWalletProvider(
           privateKeys.split(","),
-          `https://ropsten.infura.io/v3/${process.env.INFURA_ID}`
+          `https://ropsten.infura.io/v3/${INFURA_ID}`
         );
       },
       gas: 5000000,
@@ -54,7 +55,7 @@ module.exports = {
       provider: function () {
         return new HDWalletProvider(
           privateKeys.split(","),
-          `https://main.infura.io/v3/${process.env.INFURA_ID}`
+          `https://main.infura.io/v3/${INFURA_ID}`
         );
       },
       gas: 5000000,
@@ -65,7 +66,7 @@ module.exports = {
       provider: () =>
         new HDWalletProvider(
           privateKeys.split(","),
-          `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_ID}`
+          `https://polygon-mumbai.infura.io/v3/${INFURA_ID}`
         ),
       network_id: 80001,
       confirmations: 2,
@@ -76,7 +77,7 @@ module.exports = {
       provider: () =>
         new HDWalletProvider(
           privateKeys.split(","),
-          `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_ID}`
+          `https://polygon-mainnet.infura.io/v3/${INFURA_ID}`
         ),
       network_id: 137,
       confirmations: 2,
