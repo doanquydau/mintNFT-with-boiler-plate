@@ -2,9 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Web3 from "web3";
 import Web3Modal from "web3modal";
-import Contract from "../truffle/abis/DauDQCoin.json";
 import style from "../assets/css/main.css";
-import { ethers } from 'ethers';
 import { uploadFileToIPFS } from '../utils/ipfs.js'
 import { MintNFT } from '../utils/mint-nft.js'
 require('dotenv').config();
