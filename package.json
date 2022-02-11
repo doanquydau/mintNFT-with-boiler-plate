@@ -11,6 +11,7 @@
   "dependencies": {
     "@alch/alchemy-web3": "^1.1.9",
     "@openzeppelin/contracts": "^4.4.2",
+    "@openzeppelin/contracts-upgradeable": "^4.5.0",
     "@openzeppelin/test-helpers": "0.5.10",
     "@testing-library/jest-dom": "5.11.4",
     "@testing-library/react": "11.1.0",

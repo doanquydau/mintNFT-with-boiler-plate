@@ -2,6 +2,7 @@ require("dotenv").config();
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const privateKeys = process.env.REACT_APP_PRIVATE_KEYS || "";
 const INFURA_ID = process.env.REACT_APP_INFURA_ID;
+const BSC_URL = process.env.REACT_APP_API_URL;
 
 module.exports = {
   networks: {
@@ -84,6 +85,13 @@ module.exports = {
       timeoutBlocks: 200,
       skipDryRun: true,
       chainId: 137,
+    },
+    bsc: {
+      provider: () => new HDWalletProvider(privateKeys.split(","), BSC_URL),
+      network_id: 97,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true
     },
   },
   contracts_directory: "./src/truffle/contracts/",

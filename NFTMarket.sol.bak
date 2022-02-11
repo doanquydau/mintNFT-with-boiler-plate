@@ -1,0 +1,453 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.6;
+
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+// import "https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMath64x64.sol";
+import "../../libraries/solidity/ABDKMath64x64.sol";
+
+import "./DauDQCoin.sol";
+
+contract NFTMarket is
+    Initializable,
+    IERC721Receiver,
+    Ownable
+{
+    using SafeMath for uint256;
+    using EnumerableSet for EnumerableSet.UintSet;
+    using EnumerableSet for EnumerableSet.AddressSet;
+
+    bytes4 private constant _INTERFACE_ID_ERC721 = 0x80ac58cd;
+
+    int128 public defaultTax;
+
+    struct ListingItem {
+        address seller;
+        uint256 price;
+    }
+
+    IERC20 public nftToken;
+    DauDQCoin public nftItem;
+
+    mapping(address => mapping(uint256 => ListingItem)) private listings; // nftType -> nftID -> struct
+    mapping(address => EnumerableSet.UintSet) private listedTokenIDs; // nftType -> nftIDs
+    
+    //EnumerableMap.UintToAddressMap private nftOwner;
+    EnumerableSet.AddressSet private listedTokenTypes; // store types
+    EnumerableSet.AddressSet private allowedTokenTypes;
+    
+    function initialize(IERC20 _nftToken, DauDQCoin _nftItem) public initializer {
+        nftToken = _nftToken;
+        nftItem = _nftItem;
+        defaultTax = ABDKMath64x64.divu(1, 10); // 10%
+    }
+
+    // ############
+    // Events
+    // ############
+    event NewListing(
+        address indexed seller,
+        IERC721 indexed nftAddress,
+        uint256 indexed nftID,
+        uint256 price
+    );
+    event ListingPriceChange(
+        address indexed seller,
+        IERC721 indexed nftAddress,
+        uint256 indexed nftID,
+        uint256 newPrice
+    );
+    event CancelledListing(
+        address indexed seller,
+        IERC721 indexed nftAddress,
+        uint256 indexed nftID
+    );
+    event PurchasedListing(
+        address indexed buyer,
+        address seller,
+        IERC721 indexed nftAddress,
+        uint256 indexed nftID,
+        uint256 priceTax,
+        uint256 price
+    );
+
+    // ############
+    // Modifiers
+    // ############
+
+    modifier isListed(IERC721 _tokenType, uint256 nftID) {
+        require(
+            listedTokenTypes.contains(address(_tokenType)) &&
+                listedTokenIDs[address(_tokenType)].contains(nftID),
+            "nftID not listed"
+        );
+        _;
+    }
+
+    modifier isNotListed(IERC721 _tokenType, uint256 nftID) {
+        require(
+            !listedTokenTypes.contains(address(_tokenType)) ||
+                !listedTokenIDs[address(_tokenType)].contains(nftID),
+            "ntfID must not be listed"
+        );
+        _;
+    }
+
+    modifier isSeller(IERC721 _tokenType, uint256 nftID) {
+        require(
+            listings[address(_tokenType)][nftID].seller == msg.sender,
+            "You are not seller"
+        );
+        _;
+    }
+
+    modifier isValidERC721(IERC721 _tokenAddress) {
+        require(
+            ERC165Checker.supportsInterface(
+                address(_tokenAddress),
+                _INTERFACE_ID_ERC721
+            ),
+            "Not supported interface"
+        );
+        _;
+    }
+
+    // ############
+    // Views
+    // ############
+    function isTokenAllowed(IERC721 _tokenType) public view returns (bool) {
+        return allowedTokenTypes.contains(address(_tokenType));
+    }
+
+    function getAllowedTokenTypes() public view returns (IERC721[] memory) {
+        EnumerableSet.AddressSet storage set = allowedTokenTypes;
+        IERC721[] memory tokens = new IERC721[](set.length());
+
+        for (uint256 i = 0; i < tokens.length; i++) {
+            tokens[i] = IERC721(set.at(i));
+        }
+        return tokens;
+    }
+    
+    function getListedTokenTypes() public view returns (IERC721[] memory) {
+        EnumerableSet.AddressSet storage set = listedTokenTypes;
+        IERC721[] memory tokens = new IERC721[](set.length());
+
+        for (uint256 i = 0; i < tokens.length; i++) {
+            tokens[i] = IERC721(set.at(i));
+        }
+        return tokens;
+    }
+    
+	function getNft()
+        public
+        view
+        returns (address found)
+    {
+        // ListingItem memory nft = listings["0xb2d66c267f79c3a766179dd233ce6a20cd5e41f19bc2cdbf11dbb62a46b9bb51"][_nftID];
+
+        return (address(bytes20(sha256(abi.encodePacked(msg.sender,block.timestamp)))));
+    }
+
+    function getNftByID(IERC721 _tokenType, uint256 _nftID)
+        public
+        view
+        returns (uint256 found, address seller, uint256 price)
+    {
+        if (!listedTokenTypes.contains(address(_tokenType))) {
+            return (0, address(0), 0);
+        }
+
+        if (!listedTokenIDs[address(_tokenType)].contains(_nftID)) {
+            return (0, address(0), 0);
+        }
+
+        ListingItem memory nft = listings[address(_tokenType)][_nftID];
+
+        return (1, nft.seller, nft.price);
+    }
+
+    
+    function getNumberOfListingsByType(IERC721 _tokenAddress)
+        public
+        view
+        returns (uint256)
+    {
+        return listedTokenIDs[address(_tokenAddress)].length();
+    }
+    
+    function getListingIDsByType(IERC721 _tokenType)
+        public
+        view
+        returns (uint256[] memory)
+    {
+        EnumerableSet.UintSet storage set = listedTokenIDs[
+            address(_tokenType)
+        ];
+        uint256[] memory tokens = new uint256[](set.length());
+
+        for (uint256 i = 0; i < tokens.length; i++) {
+            tokens[i] = set.at(i);
+        }
+        return tokens;
+    }
+
+    function getNumberOfListingsBySeller(IERC721 _tokenType, address _seller)
+        public
+        view
+        returns (uint256)
+    {
+        EnumerableSet.UintSet storage listedTokens = listedTokenIDs[
+            address(_tokenType)
+        ];
+
+        uint256 amount = 0;
+        for (uint256 i = 0; i < listedTokens.length(); i++) {
+            if (
+                listings[address(_tokenType)][listedTokens.at(i)].seller ==
+                _seller
+            ) amount++;
+        }
+
+        return amount;
+    }
+
+    function getListingIDsBySeller(IERC721 _tokenType, address _seller)
+        public
+        view
+        returns (uint256[] memory tokens)
+    {
+        // NOTE: listedTokens is enumerated twice (once for length calc, once for getting token IDs)
+        uint256 amount = getNumberOfListingsBySeller(_tokenType, _seller);
+        tokens = new uint256[](amount);
+
+        EnumerableSet.UintSet storage listedTokens = listedTokenIDs[
+            address(_tokenType)
+        ];
+
+        uint256 index = 0;
+        for (uint256 i = 0; i < listedTokens.length(); i++) {
+            uint256 id = listedTokens.at(i);
+            if (listings[address(_tokenType)][id].seller == _seller)
+                tokens[index++] = id;
+        }
+        return tokens;
+    }
+
+    function getSellerPrice(IERC721 _tokenAddress, uint256 _id)
+        public
+        view
+        returns (uint256)
+    {
+        return listings[address(_tokenAddress)][_id].price;
+    }
+
+    function getFinalPrice(IERC721 _tokenAddress, uint256 _id)
+        public
+        view
+        returns (uint256)
+    {
+        return
+            getSellerPrice(_tokenAddress, _id).add(
+                getTaxOnListing(_tokenAddress, _id)
+            );
+    }
+
+    function calcFinalPrice(uint256 price)
+        public
+        view
+        returns (uint256)
+    {
+        return price.add(ABDKMath64x64.mulu(defaultTax, price));
+    }
+
+    function getTaxOnListing(IERC721 _tokenAddress, uint256 _id)
+        public
+        view
+        returns (uint256)
+    {
+        return
+            ABDKMath64x64.mulu(defaultTax, getSellerPrice(_tokenAddress, _id));
+    }
+
+    function getListingSlice(
+        IERC721 _tokenType,
+        uint256 start,
+        uint256 length
+    )
+        public
+        view
+        returns (
+            uint256 returnedCount,
+            uint256[] memory ids,
+            address[] memory sellers,
+            uint256[] memory prices
+        )
+    {
+        returnedCount = length;
+        ids = new uint256[](length);
+        sellers = new address[](length);
+        prices = new uint256[](length);
+
+        uint256 index = 0;
+        EnumerableSet.UintSet storage listedTokens = listedTokenIDs[
+            address(_tokenType)
+        ];
+        for (uint256 i = start; i < start + length; i++) {
+            if (i >= listedTokens.length())
+                return (index, ids, sellers, prices);
+
+            uint256 id = listedTokens.at(i);
+            ListingItem memory listing = listings[address(_tokenType)][id];
+            ids[index] = id;
+            sellers[index] = listing.seller;
+            prices[index++] = calcFinalPrice(listing.price);
+        }
+    }
+
+    // ############
+    // Mutative
+    // ############
+    function addListing(
+        IERC721 _tokenType,
+        uint256 _id,
+        uint256 _price
+    )
+        public
+        isValidERC721(_tokenType)
+        isNotListed(_tokenType, _id)
+    {
+        listings[address(_tokenType)][_id] = ListingItem(msg.sender, _price);
+        listedTokenIDs[address(_tokenType)].add(_id);
+
+        _updateListedTokenTypes(_tokenType);
+
+        // in theory the transfer and required approval already test non-owner operations
+        _tokenType.safeTransferFrom(msg.sender, address(this), _id);
+        emit NewListing(msg.sender, _tokenType, _id, _price);
+    }
+
+    function changeListingPrice(
+        IERC721 _tokenType,
+        uint256 _id,
+        uint256 _newPrice
+    ) public isListed(_tokenType, _id) isSeller(_tokenType, _id) {
+        listings[address(_tokenType)][_id].price = _newPrice;
+        emit ListingPriceChange(msg.sender, _tokenType, _id, _newPrice);
+    }
+
+    function cancelListing(IERC721 _tokenType, uint256 _id)
+        public
+        isListed(_tokenType, _id)
+        isSeller(_tokenType, _id)
+    {
+        delete listings[address(_tokenType)][_id];
+        listedTokenIDs[address(_tokenType)].remove(_id);
+
+        _updateListedTokenTypes(_tokenType);
+
+        _tokenType.safeTransferFrom(address(this), msg.sender, _id);
+
+        emit CancelledListing(msg.sender, _tokenType, _id);
+    }
+
+    function purchaseListing(
+        IERC721 _tokenType,
+        uint256 _id,
+        uint256 _maxPrice
+    ) public isListed(_tokenType, _id) {
+        // Logic condition, can remove
+        //require(mc.getTotalMint(msg.sender) > 0, "Must mint first NFT");
+
+        uint256 finalPrice = getFinalPrice(_tokenType, _id);
+        require(finalPrice <= _maxPrice, "Buying price too high");
+
+        uint256 taxAmount = getTaxOnListing(_tokenType, _id);
+
+        ListingItem memory listing = listings[address(_tokenType)][_id];
+
+        delete listings[address(_tokenType)][_id];
+        listedTokenIDs[address(_tokenType)].remove(_id);
+        _updateListedTokenTypes(_tokenType);
+
+        // Transfer fee
+        nftToken.transferFrom(msg.sender, address(nftToken), taxAmount);
+        nftToken.transferFrom(
+            msg.sender,
+            listing.seller,
+            finalPrice.sub(taxAmount)
+        );
+        
+        // Transfer NFTItem
+        _tokenType.safeTransferFrom(address(this), msg.sender, _id);
+
+        emit PurchasedListing(
+            msg.sender,
+            listing.seller,
+            _tokenType,
+            _id,
+            finalPrice,
+            finalPrice - taxAmount
+        );
+    }
+
+    function setDefaultTaxAsPercent(uint256 _percent) public onlyOwner {
+        defaultTax = ABDKMath64x64.divu(_percent, 100);
+    }
+
+    function allowToken(IERC721 _tokenType)
+        public
+        onlyOwner
+        isValidERC721(_tokenType)
+    {
+        allowedTokenTypes.add(address(_tokenType));
+    }
+
+    function disallowToken(IERC721 _tokenType) public onlyOwner {
+        allowedTokenTypes.remove(address(_tokenType));
+    }
+
+    function _updateListedTokenTypes(IERC721 tokenType) private {
+        if (listedTokenIDs[address(tokenType)].length() > 0) {
+            _registerTokenAddress(tokenType);
+        } else {
+            _unregisterTokenAddress(tokenType);
+        }
+    }
+
+    function _registerTokenAddress(IERC721 tokenType) private {
+        if (!listedTokenTypes.contains(address(tokenType))) {
+            listedTokenTypes.add(address(tokenType));
+        }
+    }
+
+    function _unregisterTokenAddress(IERC721 tokenType) private {
+        listedTokenTypes.remove(address(tokenType));
+    }
+
+    function onERC721Received(
+        address, /* operator */
+        address, /* from */
+        uint256 _id,
+        bytes calldata /* data */
+    ) external view override returns (bytes4) {
+        // NOTE: The contract address is always the message sender.
+        address _tokenAddress = msg.sender;
+
+        require(
+            listedTokenTypes.contains(_tokenAddress) &&
+                listedTokenIDs[_tokenAddress].contains(_id),
+            "Token ID not listed"
+        );
+
+        return IERC721Receiver.onERC721Received.selector;
+    }
+}

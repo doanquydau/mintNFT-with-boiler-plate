@@ -1,33 +1,46 @@
 //step 1: You define your variables from .env file
 import Web3 from "web3";
-import Contract from "../truffle/abis/DauDQCoin.json";
+import Market from "../truffle/abis/NFTMarket.json";
 require('dotenv').config();
+
 
 const API_URL = process.env.REACT_APP_API_URL;
 const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
 const PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEYS;
 const GAS_PRICE = process.env.REACT_APP_GAS_PRICE;
 const NFT_CONTRACT = process.env.REACT_APP_NFT_CONTRACT;
+const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
+// const NFT_CONTRACT = "0x5913c4b476649928B342bEf219C22F319B392F01";
+// const MARKET_CONTRACT = "0xa2d6816cd8e09b1f2c370e7044e03c0ab230C790";
 
 const web3 = new Web3(new Web3.providers.HttpProvider(API_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/'));
 
-export const MintNFT = async (tokenURI) => {
+export const NFTMarket = async () => {
 
     //step 2: Define our contract ABI (Application Binary Interface) & adresses
-    const nftContract = new web3.eth.Contract(Contract.abi, NFT_CONTRACT);
+    const marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
 
-    //step 3: Define the minting function
+    // await initialize(web3, marketContract);
+
+    console.log(PUBLIC_KEY, NFT_CONTRACT)
+    const listing = await marketContract.methods.getTokenIDsByOwner(PUBLIC_KEY).call().then(console.log);
+    const tokenURI = await marketContract.methods.getTokenUriByID(1).call().then(console.log);
+
+    return listing;
+}
+
+const initialize = async (web3, marketContract) => {
     const nonce = await web3.eth.getTransactionCount(PUBLIC_KEY, 'latest'); //get latest nonce
 
     //the transaction
     const tx = {
         'from': PUBLIC_KEY,
-        'to': NFT_CONTRACT,
+        'to': MARKET_CONTRACT,
         'nonce': nonce,
         "gasPrice": web3.utils.toHex(Number(GAS_PRICE) * Math.pow(10, 9)),
         "gasLimit": web3.utils.toHex(500000), // fixed gasLimit
         "value": web3.utils.toHex(0), // fixed gasLimit
-        'data': nftContract.methods.mintItem(PUBLIC_KEY, tokenURI).encodeABI()
+        'data': marketContract.methods.initialize(NFT_CONTRACT).encodeABI()
     };
 
     console.log(tx)
@@ -35,7 +48,5 @@ export const MintNFT = async (tokenURI) => {
     const signedTx = await web3.eth.accounts.signTransaction(tx, PRIVATE_KEY);
     console.log(signedTx)
     const transactionReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-    
-    console.log(`Transaction receipt: ${JSON.stringify(transactionReceipt)}`);
     return transactionReceipt;
 }

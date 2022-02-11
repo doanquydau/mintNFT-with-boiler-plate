@@ -5,6 +5,7 @@ import Web3Modal from "web3modal";
 import style from "../assets/css/main.css";
 import { uploadFileToIPFS } from '../utils/ipfs.js'
 import { MintNFT } from '../utils/mint-nft.js'
+import { NFTMarket } from '../utils/nft-market.js'
 require('dotenv').config();
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -19,13 +20,14 @@ const Home = () => {
       alert('Please install Metamask')
       return;
     }
-
+    
     const accounts = await ethereum.request({method: 'eth_accounts'})
     console.log(accounts);
-
+    
     if (accounts.length > 0) {
       setCurrentAccount(accounts[0])
     }
+    NFTMarket()
   }, []);
 
   const uploadFileToIpfs = async (e) => {
@@ -63,7 +65,7 @@ const Home = () => {
   
     try {
       const web3Modal = new Web3Modal({
-        network: "rinkeby", // optional
+        network: "bsc", // optional
         cacheProvider: true, // optional
         providerOptions: {}, // required
       });
