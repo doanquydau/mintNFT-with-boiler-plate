@@ -32,12 +32,12 @@ const NFTsByOwner = async (owner_address) => {
     const marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
     const listing = await marketContract.methods.getTokenIDsByOwner(owner_address).call();
     if (listing.length > 0) {
-        listing.forEach(async (element) => {
-            let tokenUri = await marketContract.methods.getTokenUriByID(element).call();
-            your_list_nft.push({"tokenID": element, "tokenUri": tokenUri});
-        });
     }
-    // console.log(listing, your_list_nft);
+    listing.forEach(async (element) => {
+        let tokenUri = await marketContract.methods.getTokenUriByID(element).call();
+        your_list_nft.push({"tokenID": element, "tokenUri": tokenUri});
+        console.log(tokenUri);
+    });
     return your_list_nft;
 }
 

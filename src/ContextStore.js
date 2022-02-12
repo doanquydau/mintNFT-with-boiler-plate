@@ -9,10 +9,10 @@ export const ContextStore = ({ children }) => {
     
     useEffect(() => {
         //if (cookies.USER_SESSION) {
-            fetch(`/auth/getUser`).then(res => res.json())
-                .then(res => {
-                    return setUserData(res.user)
-                })
+            // fetch(`/auth/getUser`).then(res => res.json())
+            //     .then(res => {
+            //         return setUserData(res.user)
+            //     })
         //}
     }, [])
 
