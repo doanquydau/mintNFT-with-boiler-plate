@@ -5,14 +5,16 @@ import Web3Modal from "web3modal";
 import style from "../assets/css/main.css";
 import { uploadFileToIPFS } from '../utils/ipfs.js'
 import { MintNFT } from '../utils/mint-nft.js'
-import { NFTMarket } from '../utils/nft-market.js'
+import { NFTMarket, NFTsByOwner } from '../utils/nft-market.js'
 require('dotenv').config();
 const API_URL = process.env.REACT_APP_API_URL;
+const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
 
 const Home = () => {
   const [currentAccount, setCurrentAccount] = useState('');
   const [metadataNFT, setMetadataNFT] = useState({});
   const [txHash, setTxHash] = useState('');
+  const [listYourNFTs, setListYourNFTs] = useState([]);
 
   useEffect(async () => {
     const { ethereum } = window;
@@ -27,8 +29,20 @@ const Home = () => {
     if (accounts.length > 0) {
       setCurrentAccount(accounts[0])
     }
-    NFTMarket()
+
+    let your_nft = await NFTsByOwner(PUBLIC_KEY)
+    setListYourNFTs(your_nft)
+    console.log(your_nft, listYourNFTs)
   }, []);
+
+  const list_nft = listYourNFTs.map(( item, index ) => {
+      return (
+        <tr key={index}>
+          <td>{item.tokenID}</td>
+          <td>{item.tokenUri}</td>
+        </tr>
+      );
+  })
 
   const uploadFileToIpfs = async (e) => {
     console.log(e.target.files[0])
@@ -97,29 +111,49 @@ const Home = () => {
     }
   }
 
+  
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        textAlign: "justify",
-        width: "500px",
-        border: "8px gray solid",
-        boxShadow: "0 0 12px rgba(0,0,0,0.5)",
-        borderRadius: "20px",
-        margin: "100px auto",
-        fontSize: "20px",
-        padding: "20px",
-      }}
-    >
-      {currentAccount ? mintNftButton() : connectWalletButton()}
-      <p>Your Address</p>
-      <p>
-        {currentAccount}
-      </p>
-      <p>Transaction hash: </p>
-      <p>{txHash}</p>
-    </div>
+    <>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          textAlign: "justify",
+          width: "500px",
+          border: "8px gray solid",
+          boxShadow: "0 0 12px rgba(0,0,0,0.5)",
+          borderRadius: "20px",
+          margin: "100px auto",
+          fontSize: "20px",
+          padding: "20px",
+        }}
+      >
+        {currentAccount ? mintNftButton() : connectWalletButton()}
+        <p>Your Address</p>
+        <p>
+          {currentAccount}
+        </p>
+        <p>Transaction hash: </p>
+        <p>{txHash}</p>
+      </div>
+      <div>
+        <table>
+          <tbody>
+            {
+              listYourNFTs.map(( item, index ) => {
+                return (
+                  <tr key={index}>
+                    <td>{item.tokenID}</td>
+                    <td>{item.tokenUri}</td>
+                  </tr>
+                );
+              })
+            }
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 };
 
