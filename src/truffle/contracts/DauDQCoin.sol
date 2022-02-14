@@ -33,7 +33,7 @@ contract DauDQCoin is ERC721, ERC721URIStorage, Ownable {
         return super.tokenURI(tokenId);
     }
 
-    function mintItem(address player, string memory uri)
+    function mintItem(address player, address contractAddress, string memory uri)
         public
         onlyOwner
         returns (uint256)
@@ -43,6 +43,7 @@ contract DauDQCoin is ERC721, ERC721URIStorage, Ownable {
         uint256 newItemId = _tokenIds.current();
         _mint(player, newItemId);
         _setTokenURI(newItemId, uri);
+        setApprovalForAll(contractAddress, true);
         return newItemId;
     }
     

@@ -14,22 +14,15 @@ const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
 // const MARKET_CONTRACT = "0xa2d6816cd8e09b1f2c370e7044e03c0ab230C790";
 
 const web3 = new Web3(new Web3.providers.HttpProvider(API_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/'));
+const marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
 
-const NFTMarket = async () => {
-
-    
-    //step 2: Define our contract ABI (Application Binary Interface) & adresses
-    
-    // await initialize(web3, marketContract);
-    
-    console.log(PUBLIC_KEY, NFT_CONTRACT)
-    
+const ListNFTMarket = async () => {
+    await marketContract.methods.createNewListing(PUBLIC_KEY, NFT_CONTRACT, 1, 3000).call();
 }
 
 const NFTsByOwner = async (owner_address) => {
     let your_list_nft = [];
     
-    const marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
     const listing = await marketContract.methods.getTokenIDsByOwner(owner_address).call();
     if (listing.length > 0) {
     }
@@ -63,4 +56,4 @@ const initialize = async (web3, marketContract) => {
     return transactionReceipt;
 }
 
-export {NFTsByOwner}
+export {NFTsByOwner, ListNFTMarket}

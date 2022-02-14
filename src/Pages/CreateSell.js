@@ -1,125 +1,130 @@
-import { Component } from 'react';
+import React, { useEffect, useState } from "react";
+import Web3 from "web3";
+import Web3Modal from "web3modal";
+
 import { Form, Button, Col, Spinner, Alert } from 'react-bootstrap';
 import { createProduct } from '../services/productData';
 import SimpleSider from '../components/Siders/SimpleSider';
 import '../components/CreateSell/CreateSell.css';
 
-class AddProduct extends Component {
-    constructor(props) {
-        super(props);
-        this.state = { title: "", price: "", description: "", city: "", category: "", image: "", loading: false, alertShow: false, errors: [] };
-        this.onChangeHandler = this.onChangeHandler.bind(this);
-        this.onSubmitHandler = this.onSubmitHandler.bind(this);
+import { uploadFileToIPFS } from '../utils/ipfs.js';
+import { MintNFT } from '../utils/mint-nft.js';
+
+require('dotenv').config();
+const API_URL = process.env.REACT_APP_API_URL;
+// const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
+
+function AddProduct() {
+    const [metadataNFT, setMetadataNFT] = useState({});
+    const [txHash, setTxHash] = useState('');
+    const [nftImage, setNftImage] = useState('');
+    const [nftTitle, setNftTitle] = useState('');
+    const [nftDescription, setNftDescription] = useState('');
+
+    useEffect(() => {
+        //
+    }, []);
+
+    const onChangeHandler = (e, name) =>  {
+        switch (name) {
+            case 'image':
+                setNftImage(e.target.files[0]);
+                console.log('set image');
+                break;
+            case 'title':
+                setNftTitle(e.target.value);
+                console.log('set title');
+                break;
+            case 'description':
+                setNftDescription(e.target.value);
+                console.log('set description');
+                break;
+        
+            default:
+                break;
+        }
     }
 
-    onChangeHandler(e) {
-        e.preventDefault();
-        this.setState({ [e.target.name]: e.target.value });
-        if (e.target.files) {
-            this.setState({ image: e.target.files[0] })
+    const onSubmitHandler = async (e) => {
+        await uploadFileToIpfs();
+        await mintNftHandler()
+    }
+
+    const uploadFileToIpfs = async () => {
+        if (!nftImage || !nftTitle || !nftDescription) {
+            return false;
+        }
+        let result = await uploadFileToIPFS(nftImage, nftTitle, nftDescription)
+        setMetadataNFT(result);
+        console.log(metadataNFT)
+    }
+
+    const mintNftHandler = async () => {
+        try {
+        //   console.log(metadataNFT)
+        //   console.log(API_URL)
+          let result_mint = await MintNFT(metadataNFT.metaDataUrl);
+          if (result_mint.status) {
+            setTxHash(result_mint.transactionHash)
+          }
+        } catch (error) {
+          console.log(error)
         }
     };
 
-    onSubmitHandler(e) {
-        e.preventDefault();
-        let { title, price, description, city, category, image } = this.state;
-        let obj = { title, price, description, city, category }
-        this.setState({ loading: true })
-        this.getBase64(image)
-            .then((data) => {
-                obj['image'] = data;
-                createProduct(obj)
-                    .then(res => {
-                        if (res.error) {
-                            this.setState({ loading: false })
-                            this.setState({ errors: res.error })
-                            this.setState({ alertShow: true })
-                        } else {
-                            this.props.history.push(`/categories/${category}/${res.productId}/details`)
-                        }
-                    })
-                    .catch(err => console.error('Creating product err: ', err))
-            })
-            .catch(err => console.error('Converting to base64 err: ', err));
-    }
+    return (
+        <>
+            <SimpleSider />
+            <div className='container'>
+                <h1 className="heading">Add a Product</h1>
+                {/* <Form onSubmit={onSubmitHandler()}> */}
+                    <Form.Row>
+                        <Form.Group as={Col} controlId="formGridTitle">
+                            <Form.Label>Title</Form.Label>
+                            <Form.Control type="text" placeholder="Enter title" name="title" required onChange={(e) => {onChangeHandler(e, 'title')}} />
+                        </Form.Group>
+{/* 
+                        <Form.Group as={Col} controlId="formGridPrice">
+                            <Form.Label>Price</Form.Label>
+                            <Form.Control type="number" step="0.01" placeholder="Price" name="price" required onChange={onChangeHandler} />
+                        </Form.Group> */}
+                    </Form.Row>
 
-    getBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
-    }
+                    <Form.Group controlId="formGridDescription.ControlTextarea1">
+                        <Form.Label>Description</Form.Label>
+                        <Form.Control as="textarea" rows={3} name="description" required onChange={(e) => {onChangeHandler(e, 'description')}} />
+                    </Form.Group>
 
-    render() {
-        return (
-            <>
-                <SimpleSider />
-                <div className='container'>
-                    <h1 className="heading">Add a Product</h1>
-                    <Form onSubmit={this.onSubmitHandler}>
-                        {this.state.alertShow &&
-                            <Alert variant="danger" onClose={() => this.setState({ alertShow: false })} dismissible>
-                                <p>
-                                    {this.state.errors}
-                                </p>
-                            </Alert>
-                        }
-                        <Form.Row>
-                            <Form.Group as={Col} controlId="formGridTitle">
-                                <Form.Label>Title</Form.Label>
-                                <Form.Control type="text" placeholder="Enter title" name="title" required onChange={this.onChangeHandler} />
-                            </Form.Group>
-
-                            <Form.Group as={Col} controlId="formGridPrice">
-                                <Form.Label>Price</Form.Label>
-                                <Form.Control type="number" step="0.01" placeholder="Price" name="price" required onChange={this.onChangeHandler} />
-                            </Form.Group>
-                        </Form.Row>
-
-                        <Form.Group controlId="formGridDescription.ControlTextarea1">
-                            <Form.Label>Description</Form.Label>
-                            <Form.Control as="textarea" rows={3} name="description" required onChange={this.onChangeHandler} />
+                    <Form.Row>
+                        {/* <Form.Group as={Col} controlId="formGridCity">
+                            <Form.Label>City</Form.Label>
+                            <Form.Control name="city" placeholder="Sofia" required onChange={onChangeHandler} />
                         </Form.Group>
 
-                        <Form.Row>
-                            <Form.Group as={Col} controlId="formGridCity">
-                                <Form.Label>City</Form.Label>
-                                <Form.Control name="city" placeholder="Sofia" required onChange={this.onChangeHandler} />
-                            </Form.Group>
+                        <Form.Group as={Col} controlId="formGridCategory">
+                            <Form.Label>Category</Form.Label>
+                            <Form.Control as="select" defaultValue="Choose..." name="category" required onChange={onChangeHandler}>
+                                <option>Choose...</option>
+                                <option>properties</option>
+                                <option>auto</option>
+                                <option>electronics</option>
+                                <option>clothes</option>
+                                <option>toys</option>
+                                <option>home</option>
+                                <option>garden</option>
+                            </Form.Control>
+                        </Form.Group> */}
 
-                            <Form.Group as={Col} controlId="formGridCategory">
-                                <Form.Label>Category</Form.Label>
-                                <Form.Control as="select" defaultValue="Choose..." name="category" required onChange={this.onChangeHandler}>
-                                    <option>Choose...</option>
-                                    <option>properties</option>
-                                    <option>auto</option>
-                                    <option>electronics</option>
-                                    <option>clothes</option>
-                                    <option>toys</option>
-                                    <option>home</option>
-                                    <option>garden</option>
-                                </Form.Control>
-                            </Form.Group>
-
-                            <Form.Group as={Col} controlId="formGridImage" >
-                                <Form.Label>Image</Form.Label>
-                                <Form.Control name="image" type="file" required onChange={this.onChangeHandler} />
-                            </Form.Group>
-                        </Form.Row>
-                        {this.state.loading ?
-                            <Button className="col-lg-12" variant="dark" disabled >
-                                Please wait... <Spinner animation="border" />
-                            </Button>
-                            :
-                            <Button className="col-lg-12" variant="dark" type="submit">Add product</Button>
-                        }
-                    </Form>
-                </div>
-            </>
-        )
-    }
+                        <Form.Group as={Col} controlId="formGridImage" >
+                            <Form.Label>Image</Form.Label>
+                            <Form.Control name="image" type="file" required onChange={(e) => {onChangeHandler(e, 'image')}} />
+                        </Form.Group>
+                    </Form.Row>
+                    <Button className="col-lg-12" variant="dark" type="button" onClick={(e) => {onSubmitHandler()}}>Add product</Button>
+                {/* </Form> */}
+            </div>
+        </>
+    )
 }
 
 export default AddProduct;

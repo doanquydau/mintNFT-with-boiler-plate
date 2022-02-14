@@ -4,7 +4,7 @@ import { Col, Row } from 'react-bootstrap';
 import '../components/Siders/SearchSider.css'
 import '../components/Categories/Categories.css';
 import '../components/ProductCard/ProductCard.css';
-import { NFTsByOwner } from '../utils/nft-market.js';
+import { NFTsByOwner, ListNFTMarket } from '../utils/nft-market.js';
 
 const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
 
@@ -26,12 +26,17 @@ function Categories( ) {
         }
         init_page();
 
+        ListNFTMarket()
         return () => { isMounted = false };
     }, [])
 
       return (
         <>
             <div className="container">
+                <hr/>
+                <label>
+                    Your NFT
+                </label>
                 <Row>
                     {products.length > 0 ? products
                     .map((x_item, key) =>
