@@ -90,7 +90,7 @@ module.exports = {
       provider: () => new HDWalletProvider(privateKeys.split(","), BSC_URL),
       network_id: 97,
       confirmations: 2,
-      timeoutBlocks: 200,
+      timeoutBlocks: 400,
       skipDryRun: true
     },
   },

@@ -4,7 +4,7 @@ import { Col, Row } from 'react-bootstrap';
 import '../components/Siders/SearchSider.css'
 import '../components/Categories/Categories.css';
 import '../components/ProductCard/ProductCard.css';
-import { NFTsByOwner, ListNFTMarket } from '../utils/nft-market.js';
+import { NFTsByOwner, ListNFTMarket, setApprovalForAll } from '../utils/nft-market.js';
 
 const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
 
@@ -25,8 +25,8 @@ function Categories( ) {
             }
         }
         init_page();
-
-        ListNFTMarket()
+        // setApprovalForAll()
+        // ListNFTMarket()
         return () => { isMounted = false };
     }, [])
 

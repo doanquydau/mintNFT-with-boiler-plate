@@ -1,20 +1,16 @@
 // contracts/GameItem.sol
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract DauDQCoin is ERC721, ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
-    using EnumerableSet for EnumerableSet.UintSet;
 
     Counters.Counter private _tokenIds;
-
-    mapping(address => EnumerableSet.UintSet) private ListNFTIDs;
 
     constructor() ERC721("DauDQ Coin", "DQDC") {}
 
@@ -33,7 +29,7 @@ contract DauDQCoin is ERC721, ERC721URIStorage, Ownable {
         return super.tokenURI(tokenId);
     }
 
-    function mintItem(address player, address contractAddress, string memory uri)
+    function mintItem(address player, string memory uri)
         public
         onlyOwner
         returns (uint256)
@@ -43,7 +39,6 @@ contract DauDQCoin is ERC721, ERC721URIStorage, Ownable {
         uint256 newItemId = _tokenIds.current();
         _mint(player, newItemId);
         _setTokenURI(newItemId, uri);
-        setApprovalForAll(contractAddress, true);
         return newItemId;
     }
     

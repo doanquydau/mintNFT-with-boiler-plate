@@ -71,40 +71,11 @@ contract NFTMarket is
     // ############
 	// Modifiers
 	// ############
-
-	modifier isListed(IERC721 nftAddress, uint256 nftID) {
-		require(
-			listedTokenTypes.contains(address(nftAddress)) &&
-				listedTokenIDs[address(nftAddress)].contains(nftID),
-			"nftID not listed"
-		);
-		_;
-	}
-
 	modifier isNotListed(IERC721 nftAddress, uint256 nftID) {
 		require(
 			!listedTokenTypes.contains(address(nftAddress)) ||
 				!listedTokenIDs[address(nftAddress)].contains(nftID),
 			"ntfID must not be listed"
-		);
-		_;
-	}
-
-	modifier isSeller(IERC721 nftAddress, uint256 nftID) {
-		require(
-			listings[address(nftAddress)][nftID].seller == msg.sender,
-			"You are not seller"
-		);
-		_;
-	}
-
-	modifier isValidERC721(IERC721 _tokenAddress) {
-		require(
-			ERC165Checker.supportsInterface(
-				address(_tokenAddress),
-				_INTERFACE_ID_ERC721
-			),
-			"Not supported interface"
 		);
 		_;
 	}
@@ -131,24 +102,20 @@ contract NFTMarket is
         return (tokenUri);
     }
 
-    function createNewListing(address from, IERC721 nftAddress, uint256 tokenID, uint256 _price) 
+    function createNewListing(address from, address nftContract, uint256 tokenID, uint256 _price) 
 	public
-		isValidERC721(nftAddress)
-		isNotListed(nftAddress, tokenID)
+		isNotListed(IERC721(nftContract), tokenID)
 	{
-		// require(
-		// 	nftItem.ownerOf(tokenID) == from,
-		// 	"not owner"
-		// );
-        listings[address(nftAddress)][tokenID] = ListingItem(from, _price);
-		listedTokenIDs[address(nftAddress)].add(tokenID);
+		IERC721 nft_token = IERC721(nftContract);
 
-		_updateListedTokenTypes(nftAddress);
+        listings[address(nft_token)][tokenID] = ListingItem(from, _price);
+		listedTokenIDs[address(nft_token)].add(tokenID);
+
+		_updateListedTokenTypes(nft_token);
 
 		// in theory the transfer and required approval already test non-owner operations
-		nftItem.safeTransferFrom(from, address(this), tokenID);
-		emit NewListing(from, nftAddress, tokenID, _price);
-        
+		nft_token.safeTransferFrom(msg.sender, address(this), tokenID);
+		emit NewListing(from, nft_token, tokenID, _price);
     }
 
 	function _updateListedTokenTypes(IERC721 tokenType) private {

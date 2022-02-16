@@ -1,6 +1,7 @@
 //step 1: You define your variables from .env file
 import Web3 from "web3";
 import Market from "../truffle/abis/NFTMarket.json";
+import nft from "../truffle/abis/DauDQCoin.json";
 require('dotenv').config();
 
 
@@ -15,6 +16,11 @@ const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
 
 const web3 = new Web3(new Web3.providers.HttpProvider(API_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/'));
 const marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
+// const nftContract = new web3.eth.Contract(nft.abi, NFT_CONTRACT);
+
+const setApprovalForAll = async () => {
+    // await nftContract.methods.setApprovalForAll(MARKET_CONTRACT, true);
+}
 
 const ListNFTMarket = async () => {
     await marketContract.methods.createNewListing(PUBLIC_KEY, NFT_CONTRACT, 1, 3000).call();
@@ -56,4 +62,4 @@ const initialize = async (web3, marketContract) => {
     return transactionReceipt;
 }
 
-export {NFTsByOwner, ListNFTMarket}
+export {NFTsByOwner, ListNFTMarket, setApprovalForAll}
