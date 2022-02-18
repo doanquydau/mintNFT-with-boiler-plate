@@ -1,6 +1,6 @@
 //step 1: You define your variables from .env file
 import Web3 from "web3";
-import Contract from "../truffle/abis/DauDQCoin.json";
+import Contract from "../truffle/abis/DauDQNFT.json";
 require('dotenv').config();
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -12,11 +12,10 @@ const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
 
 const web3 = new Web3(new Web3.providers.HttpProvider(API_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/'));
 
-export const MintNFT = async (tokenURI) => {
+//step 2: Define our contract ABI (Application Binary Interface) & adresses
+const nftContract = new web3.eth.Contract(Contract.abi, NFT_CONTRACT);
 
-    //step 2: Define our contract ABI (Application Binary Interface) & adresses
-    const nftContract = new web3.eth.Contract(Contract.abi, NFT_CONTRACT);
-
+const MintNFT = async (tokenURI) => {
     //step 3: Define the minting function
     const nonce = await web3.eth.getTransactionCount(PUBLIC_KEY, 'latest'); //get latest nonce
 
@@ -40,3 +39,9 @@ export const MintNFT = async (tokenURI) => {
     console.log(`Transaction receipt: ${JSON.stringify(transactionReceipt)}`);
     return transactionReceipt;
 }
+
+const getTokenUri = async (tokenID) => {
+    return await nftContract.methods.tokenURI(tokenID).call();
+}
+
+export {MintNFT, getTokenUri}

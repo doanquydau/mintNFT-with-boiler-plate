@@ -15,7 +15,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 // const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
 
 function AddProduct() {
-    const [metadataNFT, setMetadataNFT] = useState({});
+    const [metadataNft, setMetadataNft] = useState({});
     const [txHash, setTxHash] = useState('');
     const [nftImage, setNftImage] = useState('');
     const [nftTitle, setNftTitle] = useState('');
@@ -49,21 +49,21 @@ function AddProduct() {
         await uploadFileToIpfs();
         await mintNftHandler()
     }
-
+    
     const uploadFileToIpfs = async () => {
         if (!nftImage || !nftTitle || !nftDescription) {
             return false;
         }
         let result = await uploadFileToIPFS(nftImage, nftTitle, nftDescription)
-        setMetadataNFT(result);
-        console.log(metadataNFT)
+        
+        setMetadataNft(result);
     }
 
     const mintNftHandler = async () => {
         try {
         //   console.log(metadataNFT)
         //   console.log(API_URL)
-          let result_mint = await MintNFT(metadataNFT.metaDataUrl);
+          let result_mint = await MintNFT(metadataNft.metaDataUrl);
           if (result_mint.status) {
             setTxHash(result_mint.transactionHash)
           }

@@ -1,7 +1,7 @@
 //step 1: You define your variables from .env file
 import Web3 from "web3";
 import Market from "../truffle/abis/NFTMarket.json";
-import nft from "../truffle/abis/DauDQCoin.json";
+import NFT from "../truffle/abis/DauDQNFT.json";
 require('dotenv').config();
 
 
@@ -16,26 +16,25 @@ const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
 
 const web3 = new Web3(new Web3.providers.HttpProvider(API_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/'));
 const marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
-// const nftContract = new web3.eth.Contract(nft.abi, NFT_CONTRACT);
+const nftContract = new web3.eth.Contract(NFT.abi, NFT_CONTRACT);
 
-const setApprovalForAll = async () => {
-    // await nftContract.methods.setApprovalForAll(MARKET_CONTRACT, true);
+const GetMarketItems = async (tokenID, price) => {
+    return await marketContract.methods.fetchMarketItems().call();
 }
 
 const ListNFTMarket = async () => {
-    await marketContract.methods.createNewListing(PUBLIC_KEY, NFT_CONTRACT, 1, 3000).call();
+    // await marketContract.methods.createNewListing(PUBLIC_KEY, NFT_CONTRACT, 1, 3000).call();
 }
 
 const NFTsByOwner = async (owner_address) => {
     let your_list_nft = [];
     
-    const listing = await marketContract.methods.getTokenIDsByOwner(owner_address).call();
-    if (listing.length > 0) {
-    }
+    const listing = await nftContract.methods.getNFTsByOwner(owner_address).call();
+    
     listing.forEach(async (element) => {
-        let tokenUri = await marketContract.methods.getTokenUriByID(element).call();
-        your_list_nft.push({"tokenID": element, "tokenUri": tokenUri});
-        console.log(tokenUri);
+        let tokenUri = await nftContract.methods.tokenURI(element).call();
+        your_list_nft.push({"tokenId": element, "tokenUri": tokenUri});
+        // console.log(tokenUri);
     });
     return your_list_nft;
 }
@@ -62,4 +61,31 @@ const initialize = async (web3, marketContract) => {
     return transactionReceipt;
 }
 
-export {NFTsByOwner, ListNFTMarket, setApprovalForAll}
+const AddNewListing = async (tokenID, price) => {
+    await nftContract.methods.isApprovedForAll(PUBLIC_KEY, MARKET_CONTRACT).call().then(console.log);
+
+    let priceToWei = web3.utils.toWei(price.toString(), 'ether');
+    // const auctionPrice = web3.utils.toWei('1', 'ether');
+
+    const nonce = await web3.eth.getTransactionCount(PUBLIC_KEY, 'latest'); //get latest nonce
+
+    //the transaction
+    const tx = {
+        'from': PUBLIC_KEY,
+        'to': MARKET_CONTRACT,
+        'nonce': nonce,
+        "gasPrice": web3.utils.toHex(Number(GAS_PRICE) * Math.pow(10, 9)),
+        "gasLimit": web3.utils.toHex(500000), // fixed gasLimit
+        "value": web3.utils.toHex(0), // fixed gasLimit
+        'data': marketContract.methods.createMarketItem(NFT_CONTRACT, tokenID, priceToWei).encodeABI()
+    };
+
+    console.log(tx)
+    //step 4: Sign the transaction
+    const signedTx = await web3.eth.accounts.signTransaction(tx, PRIVATE_KEY);
+    console.log(signedTx)
+    const transactionReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    return transactionReceipt;
+}
+
+export {NFTsByOwner, ListNFTMarket, AddNewListing, GetMarketItems}

@@ -1,9 +1,9 @@
-import { Card } from 'react-bootstrap';
+import { Button, Card, Form } from 'react-bootstrap';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Moment from 'react-moment';
 
-function ProductCard({ params }) {
+function ProductCard({ params, on_market = false }) {
     const [nftData, setNftData] = useState({})
     
     useEffect(() => {
@@ -30,16 +30,30 @@ function ProductCard({ params }) {
                 <Card.Img variant="top" src={nftData.image} />
                 <Card.Body>
                     <Card.Title>{nftData.name}</Card.Title>
-                    <Card.Text>{(320).toFixed(2)}€</Card.Text>
-                    <Card.Text>{nftData.description}</Card.Text>
+                    <small className="text-muted">{nftData.description}</small>
+                    <br />
+                    {
+                        params.price ?
+                        <small className='text-sm'>Price: {(params.price)}</small>
+                        :
+                        ''
+                    }
                 </Card.Body>
             </Link>
             <Card.Footer>
                 <small className="text-muted">
-                    <Moment format="d MMM YYYY (dddd) HH:mm">
-                        {/* {params.addedAt} */}
-                    </Moment>
+                    {params.seller ? params.seller : ''}
                 </small>
+                {
+                    on_market ?
+                    <Button className="w-100">Buy</Button>
+                    : 
+                    <small className="text-muted">
+                        <Moment format="d MMM YYYY (dddd) HH:mm">
+                            {Date()}
+                        </Moment>   
+                    </small>
+                }
             </Card.Footer>
         </Card>
     )
