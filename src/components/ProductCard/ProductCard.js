@@ -1,10 +1,12 @@
-import { Button, Card, Form } from 'react-bootstrap';
+import { Button, Card, FormControl, InputGroup } from 'react-bootstrap';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Moment from 'react-moment';
+import { AddNewListing } from '../../utils/nft-market.js';
 
 function ProductCard({ params, on_market = false }) {
     const [nftData, setNftData] = useState({})
+    const [priceSell, setPriceSell] = useState(0)
     
     useEffect(() => {
         async function getNFTData() {
@@ -23,6 +25,18 @@ function ProductCard({ params, on_market = false }) {
         getNFTData()
     },[]);
 
+    const changePrice = (e) => {
+        setPriceSell(e.target.value)
+    }
+
+    const onSubmitSellNFT = (e) => {
+        console.log(params.tokenId, priceSell)
+        if (priceSell > 0) {
+            AddNewListing(params.tokenId, priceSell)
+        } else {
+            console.log('Price > 0')
+        }
+    }
 
     return (
         <Card>
@@ -34,7 +48,7 @@ function ProductCard({ params, on_market = false }) {
                     <br />
                     {
                         params.price ?
-                        <small className='text-sm'>Price: {(params.price)}</small>
+                        <small className='text-sm'>Price: {(params.price)} ETH</small>
                         :
                         ''
                     }
@@ -48,11 +62,15 @@ function ProductCard({ params, on_market = false }) {
                     on_market ?
                     <Button className="w-100">Buy</Button>
                     : 
-                    <small className="text-muted">
-                        <Moment format="d MMM YYYY (dddd) HH:mm">
-                            {Date()}
-                        </Moment>   
-                    </small>
+                    (
+                        <div>
+                            <InputGroup className="mb-3">
+                                <FormControl type="number" min="0"  placeholder="Price" onChange={(e) => changePrice(e)} aria-describedby="basic-addon2"/> 
+                                <InputGroup.Text id="basic-addon2">ETH</InputGroup.Text>
+                            </InputGroup>
+                            <Button className="w-100" onClick={() => onSubmitSellNFT()}>Sell</Button>
+                        </div>
+                    )
                 }
             </Card.Footer>
         </Card>

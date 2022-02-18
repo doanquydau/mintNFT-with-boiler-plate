@@ -4,11 +4,14 @@ import { Col, Row } from 'react-bootstrap';
 import '../components/Siders/SearchSider.css'
 import '../components/Categories/Categories.css';
 import '../components/ProductCard/ProductCard.css';
-import { NFTsByOwner, AddNewListing, GetMarketItems } from '../utils/nft-market.js';
+import { NFTsByOwner, GetMarketItems } from '../utils/nft-market.js';
 import { getTokenUri } from '../utils/mint-nft.js';
+import Web3 from "web3";
 
+const API_URL = process.env.REACT_APP_API_URL;
 const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
 const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
+const web3 = new Web3(new Web3.providers.HttpProvider(API_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/'));
 
 function Categories( ) {
     const [products, setProducts] = useState([])
@@ -19,14 +22,22 @@ function Categories( ) {
         // let your_nfts = [];
         const init_page = async () => {
             if (isMounted) {
-                const your_nfts = await NFTsByOwner(PUBLIC_KEY);
-                const market_token_ids =  await NFTsByOwner(MARKET_CONTRACT);
-                let market_items =  await GetMarketItems();
-
-                market_items = await Promise.all(market_items.map(async i => {
-                    const tokenUri = await getTokenUri(i.tokenId)
+                let your_nfts = await NFTsByOwner(PUBLIC_KEY);
+                your_nfts = await Promise.all(your_nfts.map(async it_tokenId => {
+                    let tokenUri = await getTokenUri(it_tokenId)
                     let item = {
-                      price: i.price.toString(),
+                      tokenId: it_tokenId.toString(),
+                      tokenUri
+                    }
+                    return item
+                }));
+                setProducts(your_nfts)
+
+                let market_items =  await GetMarketItems();
+                market_items = await Promise.all(market_items.map(async i => {
+                    let tokenUri = await getTokenUri(i.tokenId)
+                    let item = {
+                      price: web3.utils.fromWei(i.price.toString(),'ether'),
                       tokenId: i.tokenId.toString(),
                       seller: i.seller,
                       owner: i.owner,
@@ -34,42 +45,12 @@ function Categories( ) {
                     }
                     return item
                 }))
-
-                console.log(market_token_ids, '111');
-                console.log(market_items, '2222');
                 setMarketItems(market_items)
-                // market_items.map((x_item, key) => {
-                //     // let tokenURIData = market_token_ids.find(it => it.tokenID === x_item['tokenID'])
-                //     console.log(x_item)
-                // })
-
-                setTimeout(() => {
-                    setProducts(your_nfts)
-
-                    // console.log('1111')
-                    // if (market_items.length > 0) {
-                        // market_items.map((x_item, key) => {
-                        //     let tokenURIData = market_token_ids.find(it => it.tokenID === x_item['tokenID'])
-                        //     console.log(x_item['tokenID'])
-                        //     // setMarketItems(...market_token_ids, ...tokenURIData)
-                        // })
-                    // }
-                }, 5000);
-                
-                // console.log(products);
             }
         }
         init_page();
         return () => { isMounted = false };
     }, [])
-
-    const btnApprovalAll = () => {
-        return (
-            <button type="button" className="btn btn-primary" onClick={() => {AddNewListing(2, 0.025)}}>
-                Add New Listing
-            </button>
-        )
-    }
 
       return (
         <>
@@ -86,11 +67,8 @@ function Categories( ) {
                         </Col>
                     )
                     :
-                    <Col></Col>
+                    <Col><small>You don't have NFTs</small></Col>
                     }
-                </Row>
-                <Row>
-                    {btnApprovalAll()}
                 </Row>
                 <hr/>
                 <label>
@@ -104,7 +82,7 @@ function Categories( ) {
                         </Col>
                     )
                     :
-                    <Col></Col>
+                    <Col><small>No NFTs on marketplace</small></Col>
                     }
                 </Row>
             </div>
