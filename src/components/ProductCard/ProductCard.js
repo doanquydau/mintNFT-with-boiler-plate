@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { AddNewListing, BuyNFT } from '../../utils/nft-market.js';
 
-function ProductCard({ params, on_market = false, current_wallet = '' }) {
+function ProductCard({ params, on_market = false, current_wallet = '', web3 }) {
     let history = useHistory ();
     const [nftData, setNftData] = useState({})
     const [priceSell, setPriceSell] = useState(0)
-    
+
     useEffect(() => {
         async function getNFTData() {
             return await fetch(params.tokenUri)
@@ -29,10 +29,10 @@ function ProductCard({ params, on_market = false, current_wallet = '' }) {
         setPriceSell(e.target.value)
     }
 
-    const onSubmitSellNFT = (e) => {
+    const onSubmitSellNFT = async (e) => {
         console.log(params.tokenId, priceSell)
         if (priceSell > 0) {
-            AddNewListing(params.tokenId, priceSell)
+            await AddNewListing(params.tokenId, priceSell)
             history.go(0)
         } else {
             console.log('Price > 0')
@@ -40,7 +40,7 @@ function ProductCard({ params, on_market = false, current_wallet = '' }) {
     }
 
     const onSubmitBuyNFT = async () => {
-        await BuyNFT(current_wallet, params.tokenId)
+        await BuyNFT(params.seller, params.tokenId, params.price)
         // history.go(0)
     }
 
@@ -54,7 +54,7 @@ function ProductCard({ params, on_market = false, current_wallet = '' }) {
                     <br />
                     {
                         params.price ?
-                        <small className='text-sm'>Price: {(params.price)} ETH</small>
+                        <small className='text-sm'>Price: {web3.utils.fromWei(params.price.toString(),'ether')} BNB</small>
                         :
                         ''
                     }
@@ -72,7 +72,7 @@ function ProductCard({ params, on_market = false, current_wallet = '' }) {
                         <div>
                             <InputGroup className="mb-3">
                                 <FormControl type="number" min="0"  placeholder="Price" onChange={(e) => changePrice(e)} aria-describedby="basic-addon2"/> 
-                                <InputGroup.Text id="basic-addon2">ETH</InputGroup.Text>
+                                <InputGroup.Text id="basic-addon2">BNB</InputGroup.Text>
                             </InputGroup>
                             <Button className="w-100" onClick={() => onSubmitSellNFT()}>Sell</Button>
                         </div>

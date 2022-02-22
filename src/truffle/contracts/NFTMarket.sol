@@ -14,7 +14,6 @@ contract NFTMarket is
 {
     using Counters for Counters.Counter;
 	Counters.Counter private _itemIds;
-	Counters.Counter private _itemsSold;
 
 	address payable owner;
 
@@ -30,28 +29,35 @@ contract NFTMarket is
 		address payable owner;
 		uint256 price;
 		bool sold;
-		string currency;
 	}
 
 	mapping(uint256 => MarketItem) private idToMarketItem;
 
-	event MarketItemCreated (
+	event newListing (
 		uint indexed itemId,
 		address indexed nftContract,
 		uint256 indexed tokenId,
 		address seller,
 		address owner,
 		uint256 price,
-		bool sold,
-		string currency
+		bool sold
 	);
+
+	event PurchasedListing(
+		address indexed nftContract,
+		uint256 indexed tokenID,
+		address indexed buyer,
+		address seller,
+		uint256 price,
+		uint256 priceTax
+	);
+
 	
 	/* Places an item for sale on the marketplace */
-	function createMarketItem(
+	function addListing(
 		address nftContract,
 		uint256 tokenId,
-		uint256 price,
-		string memory currency 
+		uint256 price
 	) public payable nonReentrant {
 		require(price > 0, "Price must be at least 1 wei");
 
@@ -63,55 +69,53 @@ contract NFTMarket is
 			nftContract,
 			tokenId,
 			payable(msg.sender),
-			payable(address(0)),
+			payable(address(this)),
 			price,
-			false,
-			currency
+			false
 		);
 
 		ERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
-		emit MarketItemCreated(
+		emit newListing(
 			itemId,
 			nftContract,
 			tokenId,
 			msg.sender,
-			address(0),
+			address(this),
 			price,
-			false,
-			currency
+			false
 		);
 	}
 
 	/* Creates the sale of a marketplace item */
 	/* Transfers ownership of the item, as well as funds between parties */
-	function createMarketSale(
+	function transferItem(
 		address nftContract,
 		uint256 itemId
 	) public payable nonReentrant {
 		uint price = idToMarketItem[itemId].price;
-		uint tokenId = idToMarketItem[itemId].tokenId;
 		require(msg.value >= price, "Please submit the asking price in order to complete the purchase");
 
+		uint tokenId = idToMarketItem[itemId].tokenId;
+		uint taxAmount = 0;
+
 		payable(idToMarketItem[itemId].seller).transfer(msg.value);
-		// payable(msg.sender).transfer(price);
 
 		ERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
-
-		idToMarketItem[itemId].owner = payable(msg.sender);
-		idToMarketItem[itemId].sold = true;
-		_itemsSold.increment();
+		remove(itemId);
+		
+		emit PurchasedListing(nftContract, tokenId, msg.sender, idToMarketItem[itemId].seller, price, taxAmount);
 	}
 
 	/* Returns all unsold market items */
 	function fetchMarketItems() public view returns (MarketItem[] memory) {
 		uint itemCount = _itemIds.current();
-		uint unsoldItemCount = _itemIds.current() - _itemsSold.current();
+		uint unsoldItemCount = _itemIds.current();
 		uint currentIndex = 0;
 
 		MarketItem[] memory items = new MarketItem[](unsoldItemCount);
 		for (uint i = 0; i < itemCount; i++) {
-			if (idToMarketItem[i + 1].owner == address(0)) {
+			if (idToMarketItem[i + 1].owner == address(this)) {
 				uint currentId =  i + 1;
 				MarketItem storage currentItem = idToMarketItem[currentId];
 				items[currentIndex] = currentItem;
@@ -168,4 +172,16 @@ contract NFTMarket is
 		}
 		return items;
 	}
+
+	function remove(uint index) internal {
+		uint countItem = _itemIds.current();
+        if (index >= countItem) return;
+
+        for (uint i = index; i < countItem - 1; i++){
+            idToMarketItem[i] = idToMarketItem[i+1];
+        }
+        delete idToMarketItem[countItem-1];
+
+		_itemIds.decrement();
+    }
 }

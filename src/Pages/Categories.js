@@ -8,10 +8,9 @@ import { NFTsByOwner, GetMarketItems } from '../utils/nft-market.js';
 import { getTokenUri } from '../utils/mint-nft.js';
 import Web3 from "web3";
 
+const { ethereum } = window;
 const API_URL = process.env.REACT_APP_API_URL;
-const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
-const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
-const web3 = new Web3(new Web3.providers.HttpProvider(API_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/'));
+const web3 = new Web3(ethereum);
 
 function Categories( ) {
     const [account, setAccount] = useState('')
@@ -20,7 +19,6 @@ function Categories( ) {
 
     useEffect(() => {
         let isMounted = true;  
-        const { ethereum } = window;
         if (!ethereum) {
             alert('Please install Metamask')
             return;
@@ -32,6 +30,7 @@ function Categories( ) {
             setAccount(accounts[0])
             if (isMounted) {
                 let your_nfts = await NFTsByOwner(accounts[0]);
+                console.log(your_nfts)
                 your_nfts = await Promise.all(your_nfts.map(async it_tokenId => {
                     let tokenUri = await getTokenUri(it_tokenId)
                     let item = {
@@ -43,18 +42,22 @@ function Categories( ) {
                 setProducts(your_nfts)
 
                 let market_items =  await GetMarketItems();
+                console.log(market_items);
                 market_items = await Promise.all(market_items.map(async i => {
                     let tokenUri = await getTokenUri(i.tokenId)
                     let item = {
-                      price: web3.utils.fromWei(i.price.toString(),'ether'),
+                      price: i.price.toString(),
                       tokenId: i.tokenId.toString(),
                       seller: i.seller,
                       owner: i.owner,
-                      tokenUri
+                      tokenUri,
+                      sold: i.sold,
+                      itemId: i.itemId
                     }
                     return item
                 }))
                 setMarketItems(market_items)
+                console.log(market_items);
             }
         }
         init_page();
@@ -87,7 +90,7 @@ function Categories( ) {
                     {marketItems.length > 0 ? marketItems
                     .map((x_item, key) =>
                         <Col xs={12} md={6} lg={3} key={key}>
-                            <ProductCard params={x_item} on_market={true} current_wallet={account}/>
+                            <ProductCard params={x_item} on_market={true} current_wallet={account} web3={web3}/>
                         </Col>
                     )
                     :
