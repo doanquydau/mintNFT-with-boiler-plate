@@ -102,6 +102,7 @@ contract NFTMarket is
 		payable(idToMarketItem[itemId].seller).transfer(msg.value);
 
 		ERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
+		// ERC721(nftContract).approve(msg.sender, tokenId);
 		remove(itemId);
 		
 		emit PurchasedListing(nftContract, tokenId, msg.sender, idToMarketItem[itemId].seller, price, taxAmount);
@@ -173,15 +174,18 @@ contract NFTMarket is
 		return items;
 	}
 
-	function remove(uint index) internal {
-		uint countItem = _itemIds.current();
-        if (index >= countItem) return;
-
-        for (uint i = index; i < countItem - 1; i++){
-            idToMarketItem[i] = idToMarketItem[i+1];
-        }
-        delete idToMarketItem[countItem-1];
-
+	function remove(uint index) public {
+		delete idToMarketItem[index];
 		_itemIds.decrement();
+
+		// uint countItem = _itemIds.current();
+        // if (index >= countItem) return;
+
+        // for (uint i = index; i < countItem - 1; i++){
+        //     idToMarketItem[i] = idToMarketItem[i+1];
+        // }
+        // delete idToMarketItem[countItem-1];
+
+		// _itemIds.decrement();
     }
 }

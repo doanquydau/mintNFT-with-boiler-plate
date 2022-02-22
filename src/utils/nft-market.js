@@ -9,6 +9,7 @@ const web3 = new Web3(ethereum);
 
 const NFT_CONTRACT = process.env.REACT_APP_NFT_CONTRACT;
 const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
+const GAS_PRICE = process.env.REACT_APP_GAS_PRICE;
 
 const marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
 const nftContract = new web3.eth.Contract(NFT.abi, NFT_CONTRACT);
@@ -29,6 +30,8 @@ const AddNewListing = async (tokenID, price) => {
     const tx = {
         'from': ethereum.selectedAddress,
         'to': MARKET_CONTRACT,
+        "gasPrice": web3.utils.toHex(Number(GAS_PRICE) * Math.pow(10, 9)),
+        "gasLimit": web3.utils.toHex(500000), // fixed gasLimit
         "value": web3.utils.toHex(0), // fixed gasLimit
         'data': marketContract.methods.addListing(NFT_CONTRACT, tokenID, priceToWei).encodeABI(),
         chainId: '0x3'
