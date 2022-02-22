@@ -1,10 +1,10 @@
 import { Button, Card, FormControl, InputGroup } from 'react-bootstrap';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import Moment from 'react-moment';
-import { AddNewListing } from '../../utils/nft-market.js';
+import { Link, useHistory } from 'react-router-dom';
+import { AddNewListing, BuyNFT } from '../../utils/nft-market.js';
 
-function ProductCard({ params, on_market = false }) {
+function ProductCard({ params, on_market = false, current_wallet = '' }) {
+    let history = useHistory ();
     const [nftData, setNftData] = useState({})
     const [priceSell, setPriceSell] = useState(0)
     
@@ -33,9 +33,15 @@ function ProductCard({ params, on_market = false }) {
         console.log(params.tokenId, priceSell)
         if (priceSell > 0) {
             AddNewListing(params.tokenId, priceSell)
+            history.go(0)
         } else {
             console.log('Price > 0')
         }
+    }
+
+    const onSubmitBuyNFT = async () => {
+        await BuyNFT(current_wallet, params.tokenId)
+        // history.go(0)
     }
 
     return (
@@ -60,7 +66,7 @@ function ProductCard({ params, on_market = false }) {
                 </small>
                 {
                     on_market ?
-                    <Button className="w-100">Buy</Button>
+                    <Button className="w-100" onClick={() => onSubmitBuyNFT()}>Buy</Button>
                     : 
                     (
                         <div>

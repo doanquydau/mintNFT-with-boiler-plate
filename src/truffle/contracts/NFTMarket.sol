@@ -2,23 +2,14 @@
 
 pragma solidity ^0.8.6;
 
-// import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-// import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-// import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-// import "@openzeppelin/contracts/access/Ownable.sol";
-// import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-// import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
-
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./DauDQNFT.sol";
 
 contract NFTMarket is
-    // Initializable,
-    // IERC721Receiver,
-    // Ownable
 	ReentrancyGuard
 {
     using Counters for Counters.Counter;
@@ -26,7 +17,6 @@ contract NFTMarket is
 	Counters.Counter private _itemsSold;
 
 	address payable owner;
-	uint256 listingPrice = 0.025 ether;
 
 	constructor() {
 		owner = payable(msg.sender);
@@ -40,6 +30,7 @@ contract NFTMarket is
 		address payable owner;
 		uint256 price;
 		bool sold;
+		string currency;
 	}
 
 	mapping(uint256 => MarketItem) private idToMarketItem;
@@ -51,22 +42,18 @@ contract NFTMarket is
 		address seller,
 		address owner,
 		uint256 price,
-		bool sold
+		bool sold,
+		string currency
 	);
-
-	/* Returns the listing price of the contract */
-	function getListingPrice() public view returns (uint256) {
-		return listingPrice;
-	}
 	
 	/* Places an item for sale on the marketplace */
 	function createMarketItem(
 		address nftContract,
 		uint256 tokenId,
-		uint256 price
+		uint256 price,
+		string memory currency 
 	) public payable nonReentrant {
 		require(price > 0, "Price must be at least 1 wei");
-		// require(msg.value == listingPrice, "Price must be equal to listing price");
 
 		_itemIds.increment();
 		uint256 itemId = _itemIds.current();
@@ -78,10 +65,11 @@ contract NFTMarket is
 			payable(msg.sender),
 			payable(address(0)),
 			price,
-			false
+			false,
+			currency
 		);
 
-		IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
+		ERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
 		emit MarketItemCreated(
 			itemId,
@@ -90,7 +78,8 @@ contract NFTMarket is
 			msg.sender,
 			address(0),
 			price,
-			false
+			false,
+			currency
 		);
 	}
 
@@ -102,14 +91,16 @@ contract NFTMarket is
 	) public payable nonReentrant {
 		uint price = idToMarketItem[itemId].price;
 		uint tokenId = idToMarketItem[itemId].tokenId;
-		require(msg.value == price, "Please submit the asking price in order to complete the purchase");
+		require(msg.value >= price, "Please submit the asking price in order to complete the purchase");
 
-		idToMarketItem[itemId].seller.transfer(msg.value);
-		IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
+		payable(idToMarketItem[itemId].seller).transfer(msg.value);
+		// payable(msg.sender).transfer(price);
+
+		ERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
+
 		idToMarketItem[itemId].owner = payable(msg.sender);
 		idToMarketItem[itemId].sold = true;
 		_itemsSold.increment();
-		payable(owner).transfer(listingPrice);
 	}
 
 	/* Returns all unsold market items */

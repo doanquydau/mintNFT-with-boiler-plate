@@ -14,15 +14,24 @@ const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
 const web3 = new Web3(new Web3.providers.HttpProvider(API_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/'));
 
 function Categories( ) {
+    const [account, setAccount] = useState('')
     const [products, setProducts] = useState([])
     const [marketItems, setMarketItems] = useState([])
 
     useEffect(() => {
         let isMounted = true;  
+        const { ethereum } = window;
+        if (!ethereum) {
+            alert('Please install Metamask')
+            return;
+        }
+        
         // let your_nfts = [];
         const init_page = async () => {
+            const accounts = await ethereum.request({method: 'eth_accounts'})
+            setAccount(accounts[0])
             if (isMounted) {
-                let your_nfts = await NFTsByOwner(PUBLIC_KEY);
+                let your_nfts = await NFTsByOwner(accounts[0]);
                 your_nfts = await Promise.all(your_nfts.map(async it_tokenId => {
                     let tokenUri = await getTokenUri(it_tokenId)
                     let item = {
@@ -78,7 +87,7 @@ function Categories( ) {
                     {marketItems.length > 0 ? marketItems
                     .map((x_item, key) =>
                         <Col xs={12} md={6} lg={3} key={key}>
-                            <ProductCard params={x_item} on_market={true}/>
+                            <ProductCard params={x_item} on_market={true} current_wallet={account}/>
                         </Col>
                     )
                     :

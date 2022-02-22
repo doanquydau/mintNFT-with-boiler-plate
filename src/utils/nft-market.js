@@ -79,26 +79,27 @@ const AddNewListing = async (tokenID, price) => {
     return transactionReceipt;
 }
 
-const BuyNFT = async (tokenID) => {
-    const nonce = await web3.eth.getTransactionCount(PUBLIC_KEY, 'latest'); //get latest nonce
+const BuyNFT = async (buyer_address, tokenID) => {
+    nftContract.methods.ownerOf(tokenID).call().then(console.log);
+    // await marketContract.methods.createMarketSale(NFT_CONTRACT, tokenID).call().then(console.log)
+    // const nonce = await web3.eth.getTransactionCount(PUBLIC_KEY, 'latest'); //get latest nonce
 
-    //the transaction
-    const tx = {
-        'from': PUBLIC_KEY,
-        'to': MARKET_CONTRACT,
-        'nonce': nonce,
-        "gasPrice": web3.utils.toHex(Number(GAS_PRICE) * Math.pow(10, 9)),
-        "gasLimit": web3.utils.toHex(500000), // fixed gasLimit
-        "value": web3.utils.toHex(0), // fixed gasLimit
-        'data': marketContract.methods.createMarketSale(NFT_CONTRACT, tokenID).encodeABI()
-    };
+    // const tx = {
+    //     'from': MARKET_CONTRACT,
+    //     'to': buyer_address,
+    //     'nonce': nonce,
+    //     "gasPrice": web3.utils.toHex(Number(GAS_PRICE) * Math.pow(10, 9)),
+    //     "gasLimit": web3.utils.toHex(500000), // fixed gasLimit
+    //     "value": web3.utils.toHex(0), // fixed gasLimit
+    //     'data': marketContract.methods.createMarketSale(NFT_CONTRACT, tokenID).encodeABI()
+    // };
 
-    console.log(tx)
-    //step 4: Sign the transaction
-    const signedTx = await web3.eth.accounts.signTransaction(tx, PRIVATE_KEY);
-    const transactionReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-    console.log(transactionReceipt)
-    return transactionReceipt;
+    // console.log(tx)
+    // //step 4: Sign the transaction
+    // const signedTx = await web3.eth.accounts.signTransaction(tx, PRIVATE_KEY);
+    // const transactionReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    // console.log(transactionReceipt)
+    // return transactionReceipt;
 }
 
 export {NFTsByOwner, ListNFTMarket, AddNewListing, GetMarketItems, BuyNFT}
