@@ -96,8 +96,8 @@ contract NFTMarket is
 		uint price = idToMarketItem[itemId].price;
 		require(msg.value >= price, "Please submit the asking price in order to complete the purchase");
 
-		uint tokenId = idToMarketItem[itemId].tokenId;
-		uint taxAmount = 0;
+		uint256 tokenId = idToMarketItem[itemId].tokenId;
+		uint256 taxAmount = 0;
 
 		payable(idToMarketItem[itemId].seller).transfer(msg.value);
 

@@ -40,7 +40,7 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3 }) {
     }
 
     const onSubmitBuyNFT = async () => {
-        await BuyNFT(params.seller, params.tokenId, params.price)
+        await BuyNFT(params.tokenId, params.price)
         // history.go(0)
     }
 
