@@ -74,7 +74,7 @@ contract NFTMarket is
 			false
 		);
 
-		ERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
+		DauDQNFT(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
 		emit newListing(
 			itemId,
@@ -101,8 +101,7 @@ contract NFTMarket is
 
 		payable(idToMarketItem[itemId].seller).transfer(msg.value);
 
-		ERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
-		// ERC721(nftContract).approve(msg.sender, tokenId);
+		DauDQNFT(nftContract).transferFrom(address(this), msg.sender, tokenId);
 		remove(itemId);
 		
 		emit PurchasedListing(nftContract, tokenId, msg.sender, idToMarketItem[itemId].seller, price, taxAmount);
