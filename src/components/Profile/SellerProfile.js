@@ -5,7 +5,7 @@ import { BsFillPersonFill } from 'react-icons/bs';
 import { MdEmail, MdPhoneAndroid } from 'react-icons/md'
 import { FaSellsy } from 'react-icons/fa'
 import { RiMessage3Fill } from 'react-icons/ri';
-import { createChatRoom } from '../../services/messagesData'
+// import { createChatRoom } from '../../services/messagesData'
 
 function SellerProfile({ params, history }) {
     const [showMsg, setShowMdg] = useState(false);
@@ -20,11 +20,11 @@ function SellerProfile({ params, history }) {
 
     const onMsgSent = (e) => {
         e.preventDefault();
-        createChatRoom(params._id, message)
-            .then((res) => {
-                history.push(`/messages`)
-            })
-            .catch(err => console.log(err))
+        // createChatRoom(params._id, message)
+        //     .then((res) => {
+        //         history.push(`/messages`)
+        //     })
+        //     .catch(err => console.log(err))
     }
     return (
         <>

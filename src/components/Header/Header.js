@@ -10,20 +10,11 @@ import { useHistory } from 'react-router';
 
 import Web3 from "web3";
 import Web3Modal from "web3modal";
-// import { uploadFileToIPFS } from '../../utils/ipfs.js'
-// import { MintNFT } from '../../utils/mint-nft.js'
-// import { NFTsByOwner } from '../../utils/nft-market.js'
-require('dotenv').config();
-// const API_URL = process.env.REACT_APP_API_URL;
-// const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
 
+require('dotenv').config();
 
 const Header = () => {
-    // const { userData, setUserData } = useContext(Context)
     const [currentAccount, setCurrentAccount] = useState('');
-    // const [metadataNFT, setMetadataNFT] = useState({});
-    // const [txHash, setTxHash] = useState('');
-    // const [listYourNFTs, setListYourNFTs] = useState([]);
     const history = useHistory();
 
     useEffect(() => {
@@ -113,9 +104,6 @@ const Header = () => {
                                 {<NavLink className="dropdown-item" to="/your-sells">
                                     {<BsFillGridFill />}Sells
                                 </NavLink>}
-                                <NavLink className="dropdown-item" to="/messages">
-                                    <BsFillEnvelopeFill />Messages
-                                </NavLink>
                                 {<NavLink className="dropdown-item" to="/wishlist">
                                     <BsFillHeartFill />Wishlist
                                 </NavLink>}

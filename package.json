@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "PORT=4444 react-scripts start",
+    "start": "PORT=5555 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -37,8 +37,7 @@
     "react-cookie": "^4.0.3",
     "react-icons": "^4.2.0",
     "react-infinite-scroll-component": "^6.0.0",
-    "react-moment": "^1.1.1",
-    "socket.io-client": "^4.0.1"
+    "react-moment": "^1.1.1"
   },
   "eslintConfig": {
     "extends": [

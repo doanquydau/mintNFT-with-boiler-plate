@@ -8,14 +8,14 @@ import { BsFillPersonFill } from 'react-icons/bs';
 import { MdEmail, MdPhoneAndroid } from 'react-icons/md'
 import { FaSellsy } from 'react-icons/fa'
 import { archiveSell } from '../../../services/productData';
-import { createChatRoom } from '../../../services/messagesData'
-import './Aside.css';
+// import { createChatRoom } from '../../../services/messagesData'
+// import './Aside.css';
 
 
 function Aside({ params, history }) {
     const [showMsg, setShowMdg] = useState(false);
     const [showArchive, setShowArchive] = useState(false);
-    const [message, setMessage] = useState("");
+    // const [message, setMessage] = useState("");
     const handleClose = () => setShowMdg(false);
     const handleShow = () => setShowMdg(true);
 
@@ -34,15 +34,15 @@ function Aside({ params, history }) {
 
     const handleMsgChange = (e) => {
         e.preventDefault();
-        setMessage(e.target.value)
+        // setMessage(e.target.value)
     }
     const onMsgSent = (e) => {
         e.preventDefault();
-        createChatRoom(params.sellerId, message)
-            .then((res) => {
-                history.push(`/messages/${res.messageId}`)
-            })
-            .catch(err => console.log(err))
+        // createChatRoom(params.sellerId, message)
+        //     .then((res) => {
+        //         history.push(`/messages/${res.messageId}`)
+        //     })
+        //     .catch(err => console.log(err))
     }
 
     return (
@@ -133,4 +133,4 @@ function Aside({ params, history }) {
     )
 }
 
-export default Aside;
+// export default Aside;

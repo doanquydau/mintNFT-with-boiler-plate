@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { Form, InputGroup, Button } from 'react-bootstrap';
-import { io } from "socket.io-client";
+// import { io } from "socket.io-client";
 
 function SubmitForm({ chatId }) {
-    const socket = io();
+    // const socket = io();
     const [text, setText] = useState("");
 
     function handleMsgSubmit(e) {
-        e.preventDefault();
-        // console.log(text)
-        socket.emit('chat message', text);
+        console.log(text)
+        // socket.emit('chat message', text);
     }
 
     return (
@@ -33,4 +32,4 @@ function SubmitForm({ chatId }) {
     )
 }
 
-export default SubmitForm;
+// export default SubmitForm;
