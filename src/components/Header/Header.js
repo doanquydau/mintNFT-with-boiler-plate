@@ -3,11 +3,13 @@ import { Navbar, Nav} from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
 import './Header.css'
 import { useHistory } from 'react-router';
-
 // import Web3 from "web3";
 import Web3Modal from "web3modal";
 
-require('dotenv').config();
+// const process = require("process");
+
+// require('dotenv').config();
+
 
 const Header = () => {
     const [currentAccount, setCurrentAccount] = useState('');
@@ -46,6 +48,7 @@ const Header = () => {
           console.log('Please install Metamask')
           return;
         }
+
       
         try {
           const web3Modal = new Web3Modal({

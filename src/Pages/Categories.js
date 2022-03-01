@@ -9,7 +9,8 @@ import { getTokenUri } from '../utils/mint-nft.js';
 import Web3 from "web3";
 
 const { ethereum } = window;
-const web3 = new Web3(ethereum);
+// const web3 = new Web3(ethereum);
+let web3;
 
 function Categories( ) {
     const [account, setAccount] = useState('')
@@ -22,41 +23,52 @@ function Categories( ) {
             console.log('Please install Metamask')
             return;
         }
+
+        if (window.ethereum) {
+            web3 = new Web3(window.ethereum);
+        } else if (window.web3) {
+            web3 = new Web3(window.web3.currentProvider);
+        };
+
+        console.log(web3);
         
+
         // let your_nfts = [];
         const init_page = async () => {
-            const accounts = await ethereum.request({method: 'eth_accounts'})
-            setAccount(accounts[0])
-            if (isMounted) {
-                let your_nfts = await NFTsByOwner(accounts[0]);
-                console.log(your_nfts)
-                your_nfts = await Promise.all(your_nfts.map(async it_tokenId => {
-                    let tokenUri = await getTokenUri(it_tokenId)
-                    let item = {
-                      tokenId: it_tokenId.toString(),
-                      tokenUri
-                    }
-                    return item
-                }));
-                setProducts(your_nfts)
-
-                let market_items =  await GetMarketItems();
-                console.log(market_items);
-                market_items = await Promise.all(market_items.map(async i => {
-                    let tokenUri = await getTokenUri(i.tokenId)
-                    let item = {
-                      price: i.price.toString(),
-                      tokenId: i.tokenId.toString(),
-                      seller: i.seller,
-                      owner: i.owner,
-                      tokenUri,
-                      sold: i.sold,
-                      itemId: i.itemId
-                    }
-                    return item
-                }))
-                setMarketItems(market_items)
-                console.log(market_items);
+            if (web3 !== null && web3 !== '') {
+                const accounts = await ethereum.request({method: 'eth_accounts'})
+                setAccount(accounts[0]);
+                if (isMounted) {
+                    let your_nfts = await NFTsByOwner(accounts[0]);
+                    console.log(your_nfts)
+                    your_nfts = await Promise.all(your_nfts.map(async it_tokenId => {
+                        let tokenUri = await getTokenUri(it_tokenId)
+                        let item = {
+                          tokenId: it_tokenId.toString(),
+                          tokenUri
+                        }
+                        return item
+                    }));
+                    setProducts(your_nfts)
+    
+                    let market_items =  await GetMarketItems();
+                    console.log(market_items);
+                    market_items = await Promise.all(market_items.map(async i => {
+                        let tokenUri = await getTokenUri(i.tokenId)
+                        let item = {
+                          price: i.price.toString(),
+                          tokenId: i.tokenId.toString(),
+                          seller: i.seller,
+                          owner: i.owner,
+                          tokenUri,
+                          sold: i.sold,
+                          itemId: i.itemId
+                        }
+                        return item
+                    }))
+                    setMarketItems(market_items)
+                    console.log(market_items);
+                }
             }
         }
         init_page();

@@ -1,6 +1,8 @@
 //step 1: You define your variables from .env file
 import Web3 from "web3";
 import Contract from "../truffle/abis/DauDQNFT.json";
+const process = require("process");
+
 require('dotenv').config();
 
 const API_URL = process.env.REACT_APP_API_URL;

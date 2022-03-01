@@ -2,6 +2,8 @@
 import Web3 from "web3";
 import Market from "../truffle/abis/NFTMarket.json";
 import NFT from "../truffle/abis/DauDQNFT.json";
+const process = require("process")
+
 require('dotenv').config();
 
 const { ethereum } = window;
