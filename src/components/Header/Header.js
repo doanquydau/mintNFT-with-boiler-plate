@@ -1,8 +1,6 @@
 import React, { /* useContext, */ useEffect, useState } from 'react';
-import { Navbar, NavDropdown, Nav} from 'react-bootstrap';
+import { Navbar, Nav} from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
-import { BsFillPersonFill } from 'react-icons/bs';
-import { BsFillHeartFill, BsFillGridFill } from 'react-icons/bs';
 import './Header.css'
 import { useHistory } from 'react-router';
 
@@ -26,7 +24,7 @@ const Header = () => {
             const accounts = await ethereum.request({method: 'eth_accounts'})
             console.log(accounts);
             
-            if (accounts.length > 0) {
+            if (accounts && accounts.length > 0) {
               setCurrentAccount(accounts[0])
             }
         }
@@ -56,11 +54,8 @@ const Header = () => {
             providerOptions: {}, // required
           });
           await web3Modal.connect();
-          // const web3 = new Web3(provider);
-      
           const accounts = await ethereum.request({method: 'eth_accounts'})
-    
-          if (accounts.length > 0) {
+          if (accounts && accounts.length > 0) {
             setCurrentAccount(accounts[0])
           }
         } catch (error) {
@@ -74,6 +69,10 @@ const Header = () => {
               Mint NFT
             </button>
         )
+    }
+
+    const chunkStrAccount = () => {
+      return '****' + currentAccount.substring(currentAccount.length - 10);
     }
 
     return (
@@ -92,22 +91,7 @@ const Header = () => {
                         (<Nav>
                             {mintNftButton()}
 
-                            <NavDropdown title={<img id="navImg" src={'#'} alt="user-avatar"/>} drop="left" id="collasible-nav-dropdown">
-                                <NavLink className="dropdown-item" to={`/profile/1`}>
-                                    <BsFillPersonFill />Profile
-                                </NavLink>
-
-                                {<NavDropdown.Divider />}
-
-                                {<NavLink className="dropdown-item" to="/your-sells">
-                                    {<BsFillGridFill />}Sells
-                                </NavLink>}
-                                {<NavLink className="dropdown-item" to="/wishlist">
-                                    <BsFillHeartFill />Wishlist
-                                </NavLink>}
-
-                                <NavDropdown.Divider />                            
-                            </NavDropdown>
+                            <p className="mx-3">{chunkStrAccount()}</p>
                         </Nav>)
                         :
                         (<Nav>
