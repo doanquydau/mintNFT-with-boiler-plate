@@ -4,7 +4,6 @@ import { Col, Row } from 'react-bootstrap';
 import '../components/Siders/SearchSider.css'
 import '../components/Categories/Categories.css';
 import '../components/ProductCard/ProductCard.css';
-import { useHistory } from 'react-router-dom';
 import { NFTsByOwner, GetMarketItems } from '../utils/nft-market.js';
 import { getTokenUri } from '../utils/mint-nft.js';
 import Market from "../truffle/abis/NFTMarket.json";
@@ -20,7 +19,6 @@ let marketContract;
 let nftContract;
 
 function Categories( ) {
-    let history = useHistory ();
     const [account, setAccount] = useState('')
     const [products, setProducts] = useState([])
     const [marketItems, setMarketItems] = useState([])
@@ -61,7 +59,6 @@ function Categories( ) {
                             return item
                         }));
                         setProducts(your_nfts)
-                        console.log(your_nfts)
         
                         let market_items =  await GetMarketItems(marketContract);
                         console.log(market_items);
@@ -88,10 +85,6 @@ function Categories( ) {
         init_page();
         return () => { isMounted = false };
     }, [account])
-
-    ethereum.on('accountsChanged', (accounts) => {
-        history.go(0);
-    });
 
       return (
         <>

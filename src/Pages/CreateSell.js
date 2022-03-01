@@ -26,12 +26,16 @@ function AddProduct() {
         }        
         
         const init_page = async () => {
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-            } else if (window.web3) {
-                web3 = new Web3(window.web3.currentProvider);
-            };
-            nftContract = new web3.eth.Contract(NFT.abi, NFT_CONTRACT);
+            ethereum.request({method: 'eth_accounts'}).then(async (accounts) => {
+                if (accounts.length > 0) {
+                    if (window.ethereum) {
+                        web3 = new Web3(window.ethereum);
+                    } else if (window.web3) {
+                        web3 = new Web3(window.web3.currentProvider);
+                    };
+                    nftContract = new web3.eth.Contract(NFT.abi, NFT_CONTRACT);
+                }
+            });
         }
         init_page();
     }, []);
@@ -65,7 +69,9 @@ function AddProduct() {
             console.log(response);
             let result = await MintNFT(nftContract, web3, response.metaDataUrl);
             console.log(result);
-            alert('Success');
+            if (result.status === true || result.status === 'true') {
+                alert('Success');
+            }
         });
     }
 
@@ -89,7 +95,7 @@ function AddProduct() {
                     <Form.Row>
                         <Form.Group as={Col} controlId="formGridImage" >
                             <Form.Label>Image</Form.Label>
-                            <Form.Control name="image" type="file" required onChange={(e) => {onChangeHandler(e, 'image')}} />
+                            <Form.Control name="image" accept="image/*" type="file" required onChange={(e) => {onChangeHandler(e, 'image')}} />
                         </Form.Group>
                     </Form.Row>
                     <Button className="col-lg-12" variant="dark" type="button" onClick={(e) => {onSubmitHandler()}}>Add product</Button>

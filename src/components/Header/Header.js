@@ -6,6 +6,7 @@ import { useHistory } from 'react-router';
 import Web3Modal from "web3modal";
 
 const Header = () => {
+    const { ethereum } = window;
     const [currentAccount, setCurrentAccount] = useState('');
     const history = useHistory();
 
@@ -16,12 +17,8 @@ const Header = () => {
               console.log('Please install Metamask')
               return;
             }
-
-            if (!ethereum.isConnected()) {
-                return;
-            }
             
-            const accounts = await ethereum.request({method: 'eth_accounts'}).then((accounts) => {
+            ethereum.request({method: 'eth_accounts'}).then((accounts) => {
                 if (accounts.length > 0) {
                   setCurrentAccount(accounts[0])
                   console.log(accounts);
@@ -31,6 +28,10 @@ const Header = () => {
 
         init_application();
     }, [currentAccount]);
+
+    ethereum.on('accountsChanged', (accounts) => {
+        history.go(0);
+    });
 
     const connectWalletButton = () => {
         return (

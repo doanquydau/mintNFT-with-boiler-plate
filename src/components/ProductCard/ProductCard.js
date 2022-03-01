@@ -9,14 +9,15 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3, mar
     const [nftData, setNftData] = useState({})
     const [priceSell, setPriceSell] = useState(0)
 
+    if (web3 === null || web3 === '') {
+        if (window.ethereum) {
+            web3 = new Web3(window.ethereum);
+        } else if (window.web3) {
+            web3 = new Web3(window.web3.currentProvider);
+        };
+    }
+
     useEffect(() => {
-        if (web3 === null || web3 === '') {
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-            } else if (window.web3) {
-                web3 = new Web3(window.web3.currentProvider);
-            };
-        }
         async function getNFTData() {
             if (params.tokenUri !== null && params.tokenUri !== '') {
                 return await fetch(params.tokenUri, {method: "GET"})
