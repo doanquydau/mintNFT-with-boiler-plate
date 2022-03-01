@@ -30,11 +30,12 @@ const AddNewListing = async (marketContract, web3, tokenID, price) => {
 }
 
 const BuyNFT = async (marketContract, web3, itemID, price) => {
+    console.log(price.toString())
     const tx = {
-        'from': ethereum.selectedAddress,
-        'to': MARKET_CONTRACT,
-        "value": web3.utils.toHex(price.toString()), // fixed gasLimit 
-        'data': marketContract.methods.transferItem(NFT_CONTRACT, itemID).encodeABI(),
+        from: ethereum.selectedAddress,
+        to: MARKET_CONTRACT,
+        value: web3.utils.toHex(price.toString()),
+        data: marketContract.methods.transferItem(NFT_CONTRACT, itemID).encodeABI(),
         chainId: '0x3'
     };
     return await confirmMetamask(tx);

@@ -1,14 +1,22 @@
 import { Button, Card, FormControl, InputGroup } from 'react-bootstrap';
 import { useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import Web3 from "web3";
+import { Link, /* useHistory */ } from 'react-router-dom';
 import { AddNewListing, BuyNFT } from '../../utils/nft-market.js';
 
 function ProductCard({ params, on_market = false, current_wallet = '', web3, marketContract }) {
-    let history = useHistory ();
+    // let history = useHistory ();
     const [nftData, setNftData] = useState({})
     const [priceSell, setPriceSell] = useState(0)
 
     useEffect(() => {
+        if (web3 === null || web3 === '') {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+            } else if (window.web3) {
+                web3 = new Web3(window.web3.currentProvider);
+            };
+        }
         async function getNFTData() {
             if (params.tokenUri !== null && params.tokenUri !== '') {
                 return await fetch(params.tokenUri, {method: "GET"})
@@ -54,7 +62,7 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3, mar
                     <small className="text-muted">{nftData.description}</small>
                     <br />
                     {
-                        params.price ?
+                        params.price && web3 !== null ?
                         <small className='text-sm'>Price: {web3.utils.fromWei(params.price.toString(),'ether')} BNB</small>
                         :
                         ''

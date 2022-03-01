@@ -101,7 +101,7 @@ function Categories( ) {
                     Your NFT
                 </label>
                 <Row>
-                    {products.length > 0 ? products
+                    {products.length > 0 && web3 !== null ? products
                     .map((x_item, key) =>
                         <Col xs={12} md={6} lg={3} key={key}>
                             <ProductCard params={x_item} web3={web3} marketContract={marketContract}/>
@@ -116,7 +116,7 @@ function Categories( ) {
                     Marketplace
                 </label>
                 <Row>
-                    {marketItems.length > 0 ? marketItems
+                    {marketItems.length > 0 && web3 !== null ? marketItems
                     .map((x_item, key) =>
                         <Col xs={12} md={6} lg={3} key={key}>
                             <ProductCard params={x_item} on_market={true} current_wallet={account} web3={web3} marketContract={marketContract}/>
