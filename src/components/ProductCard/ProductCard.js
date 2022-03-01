@@ -35,7 +35,6 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3, mar
         console.log(params.tokenId, priceSell)
         if (priceSell > 0) {
             await AddNewListing(marketContract, web3, params.tokenId, priceSell)
-            history.go(0)
         } else {
             console.log('Price > 0')
         }

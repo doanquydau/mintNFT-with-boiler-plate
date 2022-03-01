@@ -31,10 +31,7 @@ function AddProduct() {
             } else if (window.web3) {
                 web3 = new Web3(window.web3.currentProvider);
             };
-        
             nftContract = new web3.eth.Contract(NFT.abi, NFT_CONTRACT);
-
-            console.log(web3, nftContract);
         }
         init_page();
     }, []);

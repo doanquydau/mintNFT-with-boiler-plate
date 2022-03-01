@@ -38,53 +38,52 @@ function Categories( ) {
         
         // let your_nfts = [];
         const init_page = async () => {
-            const accounts = await ethereum.request({method: 'eth_accounts'})
-            setAccount(accounts[0]);
-
-            if (accounts.length <= 0) {
-                return false;
-            }
-            
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-            } else if (window.web3) {
-                web3 = new Web3(window.web3.currentProvider);
-            };
+            ethereum.request({method: 'eth_accounts'}).then(async (accounts) => {
+                if (accounts.length > 0) {
+                    setAccount(accounts[0]);
+                    if (window.ethereum) {
+                        web3 = new Web3(window.ethereum);
+                    } else if (window.web3) {
+                        web3 = new Web3(window.web3.currentProvider);
+                    };
+                
+                    marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
+                    nftContract = new web3.eth.Contract(NFT.abi, NFT_CONTRACT);
         
-            marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
-            nftContract = new web3.eth.Contract(NFT.abi, NFT_CONTRACT);
-
-            if (isMounted) {
-                let your_nfts = await NFTsByOwner(nftContract, accounts[0]);
-                your_nfts = await Promise.all(your_nfts.map(async it_tokenId => {
-                    let tokenUri = await getTokenUri(nftContract, it_tokenId)
-                    let item = {
-                        tokenId: it_tokenId.toString(),
-                        tokenUri
+                    if (isMounted) {
+                        let your_nfts = await NFTsByOwner(nftContract, accounts[0]);
+                        your_nfts = await Promise.all(your_nfts.map(async it_tokenId => {
+                            let tokenUri = await getTokenUri(nftContract, it_tokenId)
+                            let item = {
+                                tokenId: it_tokenId.toString(),
+                                tokenUri
+                            }
+                            return item
+                        }));
+                        setProducts(your_nfts)
+                        console.log(your_nfts)
+        
+                        let market_items =  await GetMarketItems(marketContract);
+                        console.log(market_items);
+                        market_items = await Promise.all(market_items.map(async i => {
+                            let tokenUri = await getTokenUri(nftContract, i.tokenId)
+                            let item = {
+                              price: i.price.toString(),
+                              tokenId: i.tokenId.toString(),
+                              seller: i.seller,
+                              owner: i.owner,
+                              tokenUri,
+                              sold: i.sold,
+                              itemId: i.itemId
+                            }
+                            return item
+                        }))
+                        setMarketItems(market_items)
+                        console.log(market_items);
                     }
-                    return item
-                }));
-                setProducts(your_nfts)
-                console.log(your_nfts)
+                }
+            });
 
-                let market_items =  await GetMarketItems(marketContract);
-                console.log(market_items);
-                market_items = await Promise.all(market_items.map(async i => {
-                    let tokenUri = await getTokenUri(nftContract, i.tokenId)
-                    let item = {
-                      price: i.price.toString(),
-                      tokenId: i.tokenId.toString(),
-                      seller: i.seller,
-                      owner: i.owner,
-                      tokenUri,
-                      sold: i.sold,
-                      itemId: i.itemId
-                    }
-                    return item
-                }))
-                setMarketItems(market_items)
-                console.log(market_items);
-            }
         }
         init_page();
         return () => { isMounted = false };

@@ -21,12 +21,12 @@ const Header = () => {
                 return;
             }
             
-            const accounts = await ethereum.request({method: 'eth_accounts'})
-            console.log(accounts);
-            
-            if (accounts && accounts.length > 0) {
-              setCurrentAccount(accounts[0])
-            }
+            const accounts = await ethereum.request({method: 'eth_accounts'}).then((accounts) => {
+                if (accounts.length > 0) {
+                  setCurrentAccount(accounts[0])
+                  console.log(accounts);
+                }
+            });
         }
 
         init_application();
