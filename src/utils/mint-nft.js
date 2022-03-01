@@ -1,34 +1,23 @@
-//step 1: You define your variables from .env file
-import Web3 from "web3";
-import Contract from "../truffle/abis/DauDQNFT.json";
-const process = require("process");
-
 require('dotenv').config();
 
-const API_URL = process.env.REACT_APP_API_URL;
-const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
+const MAIN_ADDRESS = process.env.REACT_APP_MAIN_ADDRESS;
 const PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEYS;
 const GAS_PRICE = process.env.REACT_APP_GAS_PRICE;
 const NFT_CONTRACT = process.env.REACT_APP_NFT_CONTRACT;
 
-const web3 = new Web3(new Web3.providers.HttpProvider(API_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/'));
-
-//step 2: Define our contract ABI (Application Binary Interface) & adresses
-const nftContract = new web3.eth.Contract(Contract.abi, NFT_CONTRACT);
-
-const MintNFT = async (tokenURI) => {
+const MintNFT = async (nftContract, web3, tokenURI) => {
     //step 3: Define the minting function
-    const nonce = await web3.eth.getTransactionCount(PUBLIC_KEY, 'latest'); //get latest nonce
-
+    const nonce = await web3.eth.getTransactionCount(MAIN_ADDRESS, 'latest'); //get latest nonce
+    
     //the transaction
     const tx = {
-        'from': PUBLIC_KEY,
+        'from': MAIN_ADDRESS,
         'to': NFT_CONTRACT,
         'nonce': nonce,
         "gasPrice": web3.utils.toHex(Number(GAS_PRICE) * Math.pow(10, 9)),
         "gasLimit": web3.utils.toHex(500000), // fixed gasLimit
         "value": web3.utils.toHex(0), // fixed gasLimit
-        'data': nftContract.methods.mintItem(PUBLIC_KEY, tokenURI).encodeABI()
+        'data': nftContract.methods.mintItem(MAIN_ADDRESS, tokenURI).encodeABI()
     };
 
     console.log(tx)
@@ -41,7 +30,7 @@ const MintNFT = async (tokenURI) => {
     return transactionReceipt;
 }
 
-const getTokenUri = async (tokenID) => {
+const getTokenUri = async (nftContract, tokenID) => {
     return await nftContract.methods.tokenURI(tokenID).call();
 }
 

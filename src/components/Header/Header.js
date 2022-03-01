@@ -3,13 +3,7 @@ import { Navbar, Nav} from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
 import './Header.css'
 import { useHistory } from 'react-router';
-// import Web3 from "web3";
 import Web3Modal from "web3modal";
-
-// const process = require("process");
-
-// require('dotenv').config();
-
 
 const Header = () => {
     const [currentAccount, setCurrentAccount] = useState('');
@@ -22,6 +16,10 @@ const Header = () => {
               console.log('Please install Metamask')
               return;
             }
+
+            if (!ethereum.isConnected()) {
+                return;
+            }
             
             const accounts = await ethereum.request({method: 'eth_accounts'})
             console.log(accounts);
@@ -32,7 +30,7 @@ const Header = () => {
         }
 
         init_application();
-    }, []);
+    }, [currentAccount]);
 
     const connectWalletButton = () => {
         return (

@@ -4,15 +4,23 @@ import { Col, Row } from 'react-bootstrap';
 import '../components/Siders/SearchSider.css'
 import '../components/Categories/Categories.css';
 import '../components/ProductCard/ProductCard.css';
+import { useHistory } from 'react-router-dom';
 import { NFTsByOwner, GetMarketItems } from '../utils/nft-market.js';
 import { getTokenUri } from '../utils/mint-nft.js';
+import Market from "../truffle/abis/NFTMarket.json";
+import NFT from "../truffle/abis/DauDQNFT.json";
 import Web3 from "web3";
 
 const { ethereum } = window;
-// const web3 = new Web3(ethereum);
+const NFT_CONTRACT = process.env.REACT_APP_NFT_CONTRACT;
+const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
+
 let web3;
+let marketContract;
+let nftContract;
 
 function Categories( ) {
+    let history = useHistory ();
     const [account, setAccount] = useState('')
     const [products, setProducts] = useState([])
     const [marketItems, setMarketItems] = useState([])
@@ -24,56 +32,65 @@ function Categories( ) {
             return;
         }
 
-        if (window.ethereum) {
-            web3 = new Web3(window.ethereum);
-        } else if (window.web3) {
-            web3 = new Web3(window.web3.currentProvider);
-        };
-
-        console.log(web3);
+        // console.log('xxxx', ethereum.isConnected(), ethereum.isMetaMask);
+        if (!ethereum.isConnected()) {
+            return false;
+        }
         
-
+        
         // let your_nfts = [];
         const init_page = async () => {
-            if (web3 !== null && web3 !== '') {
-                const accounts = await ethereum.request({method: 'eth_accounts'})
-                setAccount(accounts[0]);
-                if (isMounted) {
-                    let your_nfts = await NFTsByOwner(accounts[0]);
-                    console.log(your_nfts)
-                    your_nfts = await Promise.all(your_nfts.map(async it_tokenId => {
-                        let tokenUri = await getTokenUri(it_tokenId)
-                        let item = {
-                          tokenId: it_tokenId.toString(),
-                          tokenUri
-                        }
-                        return item
-                    }));
-                    setProducts(your_nfts)
-    
-                    let market_items =  await GetMarketItems();
-                    console.log(market_items);
-                    market_items = await Promise.all(market_items.map(async i => {
-                        let tokenUri = await getTokenUri(i.tokenId)
-                        let item = {
-                          price: i.price.toString(),
-                          tokenId: i.tokenId.toString(),
-                          seller: i.seller,
-                          owner: i.owner,
-                          tokenUri,
-                          sold: i.sold,
-                          itemId: i.itemId
-                        }
-                        return item
-                    }))
-                    setMarketItems(market_items)
-                    console.log(market_items);
-                }
+            const accounts = await ethereum.request({method: 'eth_accounts'})
+            setAccount(accounts[0]);
+            
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+            } else if (window.web3) {
+                web3 = new Web3(window.web3.currentProvider);
+            };
+        
+            marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
+            nftContract = new web3.eth.Contract(NFT.abi, NFT_CONTRACT);
+
+            if (isMounted) {
+                let your_nfts = await NFTsByOwner(nftContract, accounts[0]);
+                your_nfts = await Promise.all(your_nfts.map(async it_tokenId => {
+                    let tokenUri = await getTokenUri(nftContract, it_tokenId)
+                    let item = {
+                        tokenId: it_tokenId.toString(),
+                        tokenUri
+                    }
+                    return item
+                }));
+                setProducts(your_nfts)
+                console.log(your_nfts)
+
+                let market_items =  await GetMarketItems(marketContract);
+                console.log(market_items);
+                market_items = await Promise.all(market_items.map(async i => {
+                    let tokenUri = await getTokenUri(i.tokenId)
+                    let item = {
+                      price: i.price.toString(),
+                      tokenId: i.tokenId.toString(),
+                      seller: i.seller,
+                      owner: i.owner,
+                      tokenUri,
+                      sold: i.sold,
+                      itemId: i.itemId
+                    }
+                    return item
+                }))
+                setMarketItems(market_items)
+                console.log(market_items);
             }
         }
         init_page();
         return () => { isMounted = false };
-    }, [])
+    }, [account])
+
+    ethereum.on('accountsChanged', (accounts) => {
+        history.go(0);
+    });
 
       return (
         <>

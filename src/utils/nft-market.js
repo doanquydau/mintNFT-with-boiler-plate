@@ -1,32 +1,20 @@
-//step 1: You define your variables from .env file
-import Web3 from "web3";
-import Market from "../truffle/abis/NFTMarket.json";
-import NFT from "../truffle/abis/DauDQNFT.json";
-const process = require("process")
-
 require('dotenv').config();
 
 const { ethereum } = window;
-const web3 = new Web3(ethereum);
 
 const NFT_CONTRACT = process.env.REACT_APP_NFT_CONTRACT;
 const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
 const GAS_PRICE = process.env.REACT_APP_GAS_PRICE;
 
-const marketContract = new web3.eth.Contract(Market.abi, MARKET_CONTRACT);
-const nftContract = new web3.eth.Contract(NFT.abi, NFT_CONTRACT);
-
-const GetMarketItems = async (tokenID, price) => {
+const GetMarketItems = async (marketContract) => {
     return await marketContract.methods.fetchMarketItems().call();
 }
 
-const NFTsByOwner = async (owner_address) => {
+const NFTsByOwner = async (nftContract, owner_address) => {
     return await nftContract.methods.getNFTsByOwner(owner_address).call();
 }
 
-const AddNewListing = async (tokenID, price) => {
-    // await nftContract.methods.isApprovedForAll(PUBLIC_KEY, MARKET_CONTRACT).call().then(console.log);
-
+const AddNewListing = async (marketContract, web3, tokenID, price) => {
     let priceToWei = web3.utils.toWei(price.toString(), 'ether');
 
     const tx = {
@@ -41,7 +29,7 @@ const AddNewListing = async (tokenID, price) => {
     return await confirmMetamask(tx);
 }
 
-const BuyNFT = async (itemID, price) => {
+const BuyNFT = async (marketContract, web3, itemID, price) => {
     const tx = {
         'from': ethereum.selectedAddress,
         'to': MARKET_CONTRACT,
