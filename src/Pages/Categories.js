@@ -70,7 +70,7 @@ function Categories( ) {
                 let market_items =  await GetMarketItems(marketContract);
                 console.log(market_items);
                 market_items = await Promise.all(market_items.map(async i => {
-                    let tokenUri = await getTokenUri(i.tokenId)
+                    let tokenUri = await getTokenUri(nftContract, i.tokenId)
                     let item = {
                       price: i.price.toString(),
                       tokenId: i.tokenId.toString(),
@@ -105,7 +105,7 @@ function Categories( ) {
                     {products.length > 0 ? products
                     .map((x_item, key) =>
                         <Col xs={12} md={6} lg={3} key={key}>
-                            <ProductCard params={x_item}/>
+                            <ProductCard params={x_item} web3={web3} marketContract={marketContract}/>
                         </Col>
                     )
                     :
@@ -120,7 +120,7 @@ function Categories( ) {
                     {marketItems.length > 0 ? marketItems
                     .map((x_item, key) =>
                         <Col xs={12} md={6} lg={3} key={key}>
-                            <ProductCard params={x_item} on_market={true} current_wallet={account} web3={web3}/>
+                            <ProductCard params={x_item} on_market={true} current_wallet={account} web3={web3} marketContract={marketContract}/>
                         </Col>
                     )
                     :

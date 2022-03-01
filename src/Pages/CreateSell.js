@@ -64,8 +64,12 @@ function AddProduct() {
             alert('Please fill info');
             return false;
         }
-        let result = await uploadFileToIPFS(nftImage, nftTitle, nftDescription);
-        await MintNFT(nftContract, web3, result);
+        uploadFileToIPFS(nftImage, nftTitle, nftDescription).then(async (response) => {
+            console.log(response);
+            let result = await MintNFT(nftContract, web3, response.metaDataUrl);
+            console.log(result);
+            alert('Success');
+        });
     }
 
     return (

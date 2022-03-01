@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { AddNewListing, BuyNFT } from '../../utils/nft-market.js';
 
-function ProductCard({ params, on_market = false, current_wallet = '', web3 }) {
+function ProductCard({ params, on_market = false, current_wallet = '', web3, marketContract }) {
     let history = useHistory ();
     const [nftData, setNftData] = useState({})
     const [priceSell, setPriceSell] = useState(0)
@@ -34,7 +34,7 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3 }) {
     const onSubmitSellNFT = async (e) => {
         console.log(params.tokenId, priceSell)
         if (priceSell > 0) {
-            await AddNewListing(params.tokenId, priceSell)
+            await AddNewListing(marketContract, web3, params.tokenId, priceSell)
             history.go(0)
         } else {
             console.log('Price > 0')
@@ -42,7 +42,7 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3 }) {
     }
 
     const onSubmitBuyNFT = async () => {
-        await BuyNFT(params.tokenId, params.price)
+        await BuyNFT(marketContract, web3, params.tokenId, params.price)
         // history.go(0)
     }
 
