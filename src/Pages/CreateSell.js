@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from "react";
-import Web3 from "web3";
-import Web3Modal from "web3modal";
 
-import { Form, Button, Col, Spinner, Alert } from 'react-bootstrap';
-import { createProduct } from '../services/productData';
-import SimpleSider from '../components/Siders/SimpleSider';
+import { Form, Button, Col} from 'react-bootstrap';
 import '../components/CreateSell/CreateSell.css';
 
 import { uploadFileToIPFS } from '../utils/ipfs.js';
 import { MintNFT } from '../utils/mint-nft.js';
 
 require('dotenv').config();
-const API_URL = process.env.REACT_APP_API_URL;
-// const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
 
 function AddProduct() {
     const [metadataNft, setMetadataNft] = useState({});
@@ -61,11 +55,10 @@ function AddProduct() {
 
     const mintNftHandler = async () => {
         try {
-        //   console.log(metadataNFT)
-        //   console.log(API_URL)
           let result_mint = await MintNFT(metadataNft.metaDataUrl);
           if (result_mint.status) {
             setTxHash(result_mint.transactionHash)
+            console.log(txHash);
           }
         } catch (error) {
           console.log(error)
@@ -74,7 +67,6 @@ function AddProduct() {
 
     return (
         <>
-            <SimpleSider />
             <div className='container'>
                 <h1 className="heading">Add a Product</h1>
                 {/* <Form onSubmit={onSubmitHandler()}> */}

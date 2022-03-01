@@ -8,7 +8,6 @@ const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY;
 const PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEYS;
 const GAS_PRICE = process.env.REACT_APP_GAS_PRICE;
 const NFT_CONTRACT = process.env.REACT_APP_NFT_CONTRACT;
-const MARKET_CONTRACT = process.env.REACT_APP_MARKET_CONTRACT;
 
 const web3 = new Web3(new Web3.providers.HttpProvider(API_URL || 'https://data-seed-prebsc-1-s1.binance.org:8545/'));
 

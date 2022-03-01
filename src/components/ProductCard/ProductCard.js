@@ -10,20 +10,22 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3 }) {
 
     useEffect(() => {
         async function getNFTData() {
-            return await fetch(params.tokenUri)
-            .then((response) => response.json())
-            .then((responseJson) => {
-                setNftData(responseJson);
-                console.log(responseJson)
-              return responseJson;
-            })
-            .catch((error) => {
-              console.error(error);
-            });
+            if (params.tokenUri !== null && params.tokenUri !== '') {
+                return await fetch(params.tokenUri, {method: "GET"})
+                .then((response) => response.json())
+                .then((responseJson) => {
+                    setNftData(responseJson);
+                    console.log(responseJson)
+                  return responseJson;
+                })
+                .catch((error) => {
+                  console.error(error);
+                });
+            }
         }
 
         getNFTData()
-    },[]);
+    },[params.tokenUri]);
 
     const changePrice = (e) => {
         setPriceSell(e.target.value)

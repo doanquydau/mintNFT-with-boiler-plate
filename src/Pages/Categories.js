@@ -9,7 +9,6 @@ import { getTokenUri } from '../utils/mint-nft.js';
 import Web3 from "web3";
 
 const { ethereum } = window;
-const API_URL = process.env.REACT_APP_API_URL;
 const web3 = new Web3(ethereum);
 
 function Categories( ) {

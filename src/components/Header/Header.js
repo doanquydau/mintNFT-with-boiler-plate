@@ -1,14 +1,12 @@
 import React, { /* useContext, */ useEffect, useState } from 'react';
-// import { Context } from '../../ContextStore';
-import { Navbar, NavDropdown, Nav, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Navbar, NavDropdown, Nav} from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
-import { BsFillPersonFill, BsFillEnvelopeFill, BsFillPlusCircleFill } from 'react-icons/bs';
-// import { IoLogOut } from 'react-icons/io5'
+import { BsFillPersonFill } from 'react-icons/bs';
 import { BsFillHeartFill, BsFillGridFill } from 'react-icons/bs';
 import './Header.css'
 import { useHistory } from 'react-router';
 
-import Web3 from "web3";
+// import Web3 from "web3";
 import Web3Modal from "web3modal";
 
 require('dotenv').config();
@@ -57,8 +55,8 @@ const Header = () => {
             cacheProvider: true, // optional
             providerOptions: {}, // required
           });
-          const provider = await web3Modal.connect();
-          const web3 = new Web3(provider);
+          await web3Modal.connect();
+          // const web3 = new Web3(provider);
       
           const accounts = await ethereum.request({method: 'eth_accounts'})
     
