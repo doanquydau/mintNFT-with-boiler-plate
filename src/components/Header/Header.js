@@ -17,7 +17,7 @@ const Header = () => {
         async function init_application() {
             const { ethereum } = window;
             if (!ethereum) {
-              alert('Please install Metamask')
+              console.log('Please install Metamask')
               return;
             }
             
@@ -43,7 +43,7 @@ const Header = () => {
     const connectWalletHandler = async () => {
         const { ethereum } = window;
         if (!ethereum) {
-          alert('Please install Metamask')
+          console.log('Please install Metamask')
           return;
         }
       

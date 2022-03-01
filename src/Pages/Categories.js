@@ -19,7 +19,7 @@ function Categories( ) {
     useEffect(() => {
         let isMounted = true;  
         if (!ethereum) {
-            alert('Please install Metamask')
+            console.log('Please install Metamask')
             return;
         }
         
