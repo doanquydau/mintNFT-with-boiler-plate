@@ -32,15 +32,18 @@ function Categories( ) {
             return;
         }
 
-        if (!ethereum.isConnected() || account === '') {
+        if (!ethereum.isConnected()) {
             return false;
         }
-        
         
         // let your_nfts = [];
         const init_page = async () => {
             const accounts = await ethereum.request({method: 'eth_accounts'})
             setAccount(accounts[0]);
+
+            if (accounts.length <= 0) {
+                return false;
+            }
             
             if (window.ethereum) {
                 web3 = new Web3(window.ethereum);
