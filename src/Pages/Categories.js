@@ -32,8 +32,7 @@ function Categories( ) {
             return;
         }
 
-        // console.log('xxxx', ethereum.isConnected(), ethereum.isMetaMask);
-        if (!ethereum.isConnected()) {
+        if (!ethereum.isConnected() || account === '') {
             return false;
         }
         
