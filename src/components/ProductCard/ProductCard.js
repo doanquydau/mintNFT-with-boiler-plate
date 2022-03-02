@@ -24,7 +24,7 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3, mar
                 .then((response) => response.json())
                 .then((responseJson) => {
                     setNftData(responseJson);
-                    console.log(responseJson)
+                    // console.log(responseJson)
                   return responseJson;
                 })
                 .catch((error) => {

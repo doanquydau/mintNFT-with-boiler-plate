@@ -36,4 +36,8 @@ const getTokenUri = async (nftContract, tokenID) => {
     return await nftContract.methods.tokenURI(tokenID).call();
 }
 
-export {MintNFT, getTokenUri}
+const NFTsByOwner = async (nftContract, owner_address) => {
+    return await nftContract.methods.getNFTsByOwner(owner_address).call();
+}
+
+export {MintNFT, getTokenUri, NFTsByOwner}

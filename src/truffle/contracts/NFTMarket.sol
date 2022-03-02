@@ -133,10 +133,6 @@ contract NFTMarket is
 		uint price = marketItems[tokenId].price;
 		require(msg.value >= price, "Please submit the asking price in order to complete the purchase");
 
-		marketItems[tokenId].owner = payable(msg.sender);
-		marketItems[tokenId].sold = true;
-		marketItems[tokenId].seller = payable(address(0));
-
 		payable(marketItems[tokenId].seller).transfer(msg.value);
 		DauDQNFT(nftContract).transferFrom(address(this), msg.sender, tokenId);
 		remove(tokenId);

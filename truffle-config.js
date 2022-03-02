@@ -100,7 +100,7 @@ module.exports = {
   test_directory: "./src/truffle/test/",
   compilers: {
     solc: {
-      version: ">=0.6.0 <0.8.7",
+      version: ">=0.6.0 <=0.8.7",
       optimizer: {
         enabled: true,
         runs: 200,

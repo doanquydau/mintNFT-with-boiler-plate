@@ -10,8 +10,8 @@ const GetMarketItems = async (marketContract) => {
     return await marketContract.methods.fetchMarketItems().call();
 }
 
-const NFTsByOwner = async (nftContract, owner_address) => {
-    return await nftContract.methods.getNFTsByOwner(owner_address).call();
+const YourNFTsListing = async (marketContract) => {
+    return await marketContract.methods.fetchMyNFTsListingOnMarket().call();
 }
 
 const AddNewListing = async (marketContract, web3, tokenID, price) => {
@@ -29,13 +29,37 @@ const AddNewListing = async (marketContract, web3, tokenID, price) => {
     return await confirmMetamask(tx);
 }
 
+const UpdateListing = async (marketContract, web3, tokenID, price) => {
+    let priceToWei = web3.utils.toWei(price.toString(), 'ether');
+
+    const tx = {
+        'from': ethereum.selectedAddress,
+        'to': MARKET_CONTRACT,
+        "value": web3.utils.toHex(0), // fixed gasLimit
+        'data': marketContract.methods.updateListing(tokenID, priceToWei).encodeABI(),
+        chainId: '0x3'
+    };
+    return await confirmMetamask(tx);
+}
+
+const CancelListing = async (marketContract, nftContract, web3, tokenID) => {
+    const tx = {
+        'from': ethereum.selectedAddress,
+        'to': MARKET_CONTRACT,
+        "value": web3.utils.toHex(0), // fixed gasLimit
+        'data': marketContract.methods.cancelListing(nftContract, tokenID).encodeABI(),
+        chainId: '0x3'
+    };
+    return await confirmMetamask(tx);
+}
+
 const BuyNFT = async (marketContract, web3, itemID, price) => {
     console.log(price.toString())
     const tx = {
         from: ethereum.selectedAddress,
         to: MARKET_CONTRACT,
         value: web3.utils.toHex(price.toString()),
-        data: marketContract.methods.transferItem(NFT_CONTRACT, itemID).encodeABI(),
+        data: marketContract.methods.buyItem(NFT_CONTRACT, itemID).encodeABI(),
         chainId: '0x3'
     };
     return await confirmMetamask(tx);
@@ -53,4 +77,4 @@ const confirmMetamask = async (tx) => {
     return transactionReceipt;
 }
 
-export {NFTsByOwner, AddNewListing, GetMarketItems, BuyNFT}
+export {AddNewListing, GetMarketItems, BuyNFT, YourNFTsListing, UpdateListing, CancelListing}

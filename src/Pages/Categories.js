@@ -3,8 +3,8 @@ import ProductCard from '../components/ProductCard/ProductCard';
 import { Col, Row } from 'react-bootstrap';
 import '../components/Categories/Categories.css';
 import '../components/ProductCard/ProductCard.css';
-import { NFTsByOwner, GetMarketItems } from '../utils/nft-market.js';
-import { getTokenUri } from '../utils/mint-nft.js';
+import { GetMarketItems, YourNFTsListing } from '../utils/nft-market.js';
+import { getTokenUri, NFTsByOwner } from '../utils/mint-nft.js';
 import Market from "../truffle/abis/NFTMarket.json";
 import NFT from "../truffle/abis/DauDQNFT.json";
 import Web3 from "web3";
@@ -19,7 +19,8 @@ let nftContract;
 
 function Categories( ) {
     const [account, setAccount] = useState('')
-    const [products, setProducts] = useState([])
+    const [products, setProducts] = useState([]);
+    const [yourNftListing, setYourNftListing] = useState([])
     const [marketItems, setMarketItems] = useState([])
 
     useEffect(() => {
@@ -58,6 +59,19 @@ function Categories( ) {
                             return item
                         }));
                         setProducts(your_nfts)
+
+                        let your_listing = await YourNFTsListing(marketContract);
+                        console.log('xxx', your_listing);
+                        your_listing = await Promise.all(your_listing.map(async it_tokenId => {
+                            let tokenUri = await getTokenUri(nftContract, it_tokenId)
+                            let item = {
+                                tokenId: it_tokenId.toString(),
+                                tokenUri
+                            }
+                            return item
+                        }));
+                        setYourNftListing(your_listing);
+                        console.log('xxx', your_listing)
         
                         let market_items =  await GetMarketItems(marketContract);
                         console.log(market_items);
@@ -74,8 +88,7 @@ function Categories( ) {
                             }
                             return item
                         }))
-                        setMarketItems(market_items)
-                        console.log(market_items);
+                        setMarketItems(market_items);
                     }
                 }
             });
@@ -94,6 +107,21 @@ function Categories( ) {
                 </label>
                 <Row>
                     {products.length > 0 && web3 !== null ? products
+                    .map((x_item, key) =>
+                        <Col xs={12} md={6} lg={3} key={key}>
+                            <ProductCard params={x_item} web3={web3} marketContract={marketContract}/>
+                        </Col>
+                    )
+                    :
+                    <Col><small>You don't have NFTs</small></Col>
+                    }
+                </Row>
+                <hr/>
+                <label>
+                    Your NFT Listing on Market
+                </label>
+                <Row>
+                    {yourNftListing.length > 0 && web3 !== null ? yourNftListing
                     .map((x_item, key) =>
                         <Col xs={12} md={6} lg={3} key={key}>
                             <ProductCard params={x_item} web3={web3} marketContract={marketContract}/>
