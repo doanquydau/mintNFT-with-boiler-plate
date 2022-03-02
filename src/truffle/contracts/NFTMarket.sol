@@ -61,9 +61,7 @@ contract NFTMarket is
 		address indexed nftContract,
 		uint256 indexed tokenID,
 		address indexed owner,
-		address seller,
-		uint256 price,
-		uint256 priceTax
+		address seller
 	);
 
 	/* Places an item for sale on the marketplace */
@@ -112,7 +110,7 @@ contract NFTMarket is
 		);
     }
 
-	function cancelListing(address nftContract, uint256 tokenId, uint256 price) public payable {
+	function cancelListing(address nftContract, uint256 tokenId) public payable {
 		require(marketItems[tokenId].seller == msg.sender, "Only item seller can perform this operation");
 		require(marketItems[tokenId].sold == false, "Item sold. Can not cancel listing!");
 
@@ -123,9 +121,7 @@ contract NFTMarket is
 			nftContract,
 			tokenId,
 			msg.sender,
-			address(0),
-			price,
-			priceTax
+			address(this)
 		);
     }
 
