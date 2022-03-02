@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import ProductCard from '../components/ProductCard/ProductCard';
 import { Col, Row } from 'react-bootstrap';
-import '../components/Siders/SearchSider.css'
 import '../components/Categories/Categories.css';
 import '../components/ProductCard/ProductCard.css';
 import { NFTsByOwner, GetMarketItems } from '../utils/nft-market.js';
