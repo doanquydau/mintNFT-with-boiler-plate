@@ -72,10 +72,7 @@ contract NFTMarket is
 	) public payable nonReentrant {
 		require(price > 0, "Price must be at least 1 wei");
 
-		_itemIds.increment();
-
-		uint currentItemId = _itemIds.current();
-		marketTokenIDs[currentItemId] = tokenId;
+		addMarketTokenIDs(tokenId);
 	
 		marketItems[tokenId] =  MarketItem(
 			nftContract,
@@ -115,7 +112,7 @@ contract NFTMarket is
 		require(marketItems[tokenId].sold == false, "Item sold. Can not cancel listing!");
 
 		DauDQNFT(nftContract).transferFrom(address(this), msg.sender, tokenId);
-		remove(tokenId);
+		removeMarketTokenIDs(tokenId);
 
 		emit CancelListingEvent(
 			nftContract,
@@ -135,7 +132,8 @@ contract NFTMarket is
 
 		payable(marketItems[tokenId].seller).transfer(msg.value);
 		DauDQNFT(nftContract).transferFrom(address(this), msg.sender, tokenId);
-		remove(tokenId);
+
+		removeMarketTokenIDs(tokenId);
 		
 		emit PurchasedListingEvent(nftContract, tokenId, msg.sender, marketItems[tokenId].seller, price, priceTax);
 	}
@@ -183,7 +181,13 @@ contract NFTMarket is
 		return items;
 	}
 
-	function remove(uint tokenId) private {
+	function addMarketTokenIDs(uint tokenId) internal {
+		_itemIds.increment();
+		uint currentItemId = _itemIds.current();
+		marketTokenIDs[currentItemId] = tokenId;
+	}
+
+	function removeMarketTokenIDs(uint tokenId) internal {
 		uint totalItemCount = _itemIds.current();
 
 		for (uint i = 1; i < totalItemCount; i++) {
@@ -200,7 +204,7 @@ contract NFTMarket is
 		}
 	}
 
-	function reorganizeMarketTokenIds (uint index, uint totalItemCount) private {
+	function reorganizeMarketTokenIds (uint index, uint totalItemCount) internal {
 		if (index > totalItemCount) return;
 
 		if (index < totalItemCount) {
