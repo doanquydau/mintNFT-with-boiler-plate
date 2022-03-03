@@ -161,7 +161,7 @@ contract NFTMarket is
 	function fetchMyNFTsListingOnMarket() public view returns (MarketItem[] memory) {
 		uint totalItemCount = _itemIds.current();
 		uint itemCount = 0;
-		uint currentIndex = 0;
+		uint tokenId = 0;
 
 		for (uint i = 0; i < totalItemCount; i++) {
 			if (marketItems[i + 1].seller == msg.sender) {
@@ -170,12 +170,13 @@ contract NFTMarket is
 		}
 
 		MarketItem[] memory items = new MarketItem[](itemCount);
-		for (uint i = 0; i < totalItemCount; i++) {
-			if (marketItems[i + 1].seller == msg.sender && marketItems[i + 1].sold == false) {
-				uint currentId =  i + 1;
-				MarketItem storage currentItem = marketItems[currentId];
-				items[currentIndex] = currentItem;
-				currentIndex += 1;
+		if (itemCount >= 1) {
+			for (uint i = 1; i <= itemCount; i++) {
+				tokenId = marketTokenIDs[i];
+				if (marketItems[tokenId].seller == msg.sender) {
+					MarketItem storage currentItem = marketItems[i];
+					items[i - 1] = currentItem;
+				}
 			}
 		}
 		return items;
