@@ -2,10 +2,9 @@ import { Button, Card, FormControl, InputGroup } from 'react-bootstrap';
 import { useEffect, useState } from 'react';
 import Web3 from "web3";
 import { Link, /* useHistory */ } from 'react-router-dom';
-import { AddNewListing, BuyNFT } from '../../utils/nft-market.js';
+import { AddNewListing, BuyNFT, UpdateListing, CancelListing } from '../../utils/nft-market.js';
 
-function ProductCard({ params, on_market = false, current_wallet = '', web3, marketContract }) {
-    // let history = useHistory ();
+function ProductCard({ params, type, current_wallet = '', web3, marketContract, nftContract }) {
     const [nftData, setNftData] = useState({})
     const [priceSell, setPriceSell] = useState(0)
 
@@ -24,8 +23,7 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3, mar
                 .then((response) => response.json())
                 .then((responseJson) => {
                     setNftData(responseJson);
-                    // console.log(responseJson)
-                  return responseJson;
+                    return responseJson;
                 })
                 .catch((error) => {
                   console.error(error);
@@ -34,7 +32,7 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3, mar
         }
 
         getNFTData()
-    },[params.tokenUri]);
+    },[params.tokenUri, web3]);
 
     const changePrice = (e) => {
         setPriceSell(e.target.value)
@@ -45,13 +43,58 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3, mar
         if (priceSell > 0) {
             await AddNewListing(marketContract, web3, params.tokenId, priceSell)
         } else {
-            console.log('Price > 0')
+            alert('Price > 0');
         }
+        setPriceSell(0)
+    }
+
+    const onSubmitUpdatePriceNFT = async (e) => {
+        if (priceSell > 0) {
+            await UpdateListing(marketContract, web3, params.tokenId, priceSell)
+        } else {
+            alert('Price > 0')
+        }
+        setPriceSell(0);
     }
 
     const onSubmitBuyNFT = async () => {
         await BuyNFT(marketContract, web3, params.tokenId, params.price)
-        // history.go(0)
+        alert('Please wait confirmation from Metamask');
+    }
+
+    const onSubmitCancelSellNFT = async () => {
+        await CancelListing(marketContract, web3, params.tokenId)
+        alert('Please wait confirmation from Metamask');
+    }
+
+    const handleButtonWithType = () => {
+        if (type === 'mynft') {
+            return (
+                <div>
+                    <InputGroup className="mb-3">
+                        <FormControl type="number" min="0"  placeholder="Price" onChange={(e) => changePrice(e)} aria-describedby="basic-addon2"/> 
+                        <InputGroup.Text id="basic-addon2">BNB</InputGroup.Text>
+                    </InputGroup>
+                    <Button className="w-100" onClick={() => onSubmitSellNFT()}>Sell</Button>
+                </div>
+            );
+        } else if (type === 'mylisting') {
+            return (
+                <div>
+                    <InputGroup className="mb-3">
+                        <FormControl type="number" min="0"  placeholder="Price" onChange={(e) => changePrice(e)} aria-describedby="basic-addon2"/> 
+                        <InputGroup.Text id="basic-addon2">BNB</InputGroup.Text>
+                    </InputGroup>
+                    <Button className="w-100" onClick={() => onSubmitUpdatePriceNFT()}>Update Price</Button>
+                    <hr />
+                    <Button className="w-100 bg-danger text-white" onClick={() => onSubmitCancelSellNFT()}>Cancel Listing</Button>
+                </div>
+            );
+        } else if (type === 'market') {
+            return (
+                <Button className="w-100" onClick={() => onSubmitBuyNFT()}>Buy</Button>
+            );
+        }
     }
 
     return (
@@ -74,20 +117,7 @@ function ProductCard({ params, on_market = false, current_wallet = '', web3, mar
                 <small className="text-muted">
                     {params.seller ? params.seller : ''}
                 </small>
-                {
-                    on_market ?
-                    <Button className="w-100" onClick={() => onSubmitBuyNFT()}>Buy</Button>
-                    : 
-                    (
-                        <div>
-                            <InputGroup className="mb-3">
-                                <FormControl type="number" min="0"  placeholder="Price" onChange={(e) => changePrice(e)} aria-describedby="basic-addon2"/> 
-                                <InputGroup.Text id="basic-addon2">BNB</InputGroup.Text>
-                            </InputGroup>
-                            <Button className="w-100" onClick={() => onSubmitSellNFT()}>Sell</Button>
-                        </div>
-                    )
-                }
+                { handleButtonWithType() }
             </Card.Footer>
         </Card>
     )

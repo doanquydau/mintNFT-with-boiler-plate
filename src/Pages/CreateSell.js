@@ -15,6 +15,7 @@ let nftContract;
 require('dotenv').config();
 
 function AddProduct() {
+    const [submitForm, setSubmitForm] = useState(false);
     const [nftImage, setNftImage] = useState('');
     const [nftTitle, setNftTitle] = useState('');
     const [nftDescription, setNftDescription] = useState('');
@@ -65,6 +66,7 @@ function AddProduct() {
             alert('Please fill info');
             return false;
         }
+        setSubmitForm(true);
         uploadFileToIPFS(nftImage, nftTitle, nftDescription).then(async (response) => {
             console.log(response);
             let result = await MintNFT(nftContract, web3, response.metaDataUrl);
@@ -72,6 +74,7 @@ function AddProduct() {
             if (result.status === true || result.status === 'true') {
                 alert('Success');
             }
+            setSubmitForm(false);
         });
     }
 
@@ -98,7 +101,7 @@ function AddProduct() {
                             <Form.Control name="image" accept="image/*" type="file" required onChange={(e) => {onChangeHandler(e, 'image')}} />
                         </Form.Group>
                     </Form.Row>
-                    <Button className="col-lg-12" variant="dark" type="button" onClick={(e) => {onSubmitHandler()}}>Add product</Button>
+                    <Button className="col-lg-12" variant="dark" type="button" onClick={(e) => {onSubmitHandler()}} disabled={submitForm}>Add product</Button>
                 {/* </Form> */}
             </div>
         </>

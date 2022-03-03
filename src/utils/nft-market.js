@@ -24,7 +24,6 @@ const AddNewListing = async (marketContract, web3, tokenID, price) => {
         "gasLimit": web3.utils.toHex(500000), // fixed gasLimit
         "value": web3.utils.toHex(0), // fixed gasLimit
         'data': marketContract.methods.addListing(NFT_CONTRACT, tokenID, priceToWei).encodeABI(),
-        chainId: '0x3'
     };
     return await confirmMetamask(tx);
 }
@@ -37,18 +36,16 @@ const UpdateListing = async (marketContract, web3, tokenID, price) => {
         'to': MARKET_CONTRACT,
         "value": web3.utils.toHex(0), // fixed gasLimit
         'data': marketContract.methods.updateListing(tokenID, priceToWei).encodeABI(),
-        chainId: '0x3'
     };
     return await confirmMetamask(tx);
 }
 
-const CancelListing = async (marketContract, nftContract, web3, tokenID) => {
+const CancelListing = async (marketContract, web3, tokenID) => {
     const tx = {
         'from': ethereum.selectedAddress,
         'to': MARKET_CONTRACT,
         "value": web3.utils.toHex(0), // fixed gasLimit
-        'data': marketContract.methods.cancelListing(nftContract, tokenID).encodeABI(),
-        chainId: '0x3'
+        'data': marketContract.methods.cancelListing(NFT_CONTRACT, tokenID).encodeABI(),
     };
     return await confirmMetamask(tx);
 }
@@ -60,7 +57,6 @@ const BuyNFT = async (marketContract, web3, itemID, price) => {
         to: MARKET_CONTRACT,
         value: web3.utils.toHex(price.toString()),
         data: marketContract.methods.buyItem(NFT_CONTRACT, itemID).encodeABI(),
-        chainId: '0x3'
     };
     return await confirmMetamask(tx);
 }

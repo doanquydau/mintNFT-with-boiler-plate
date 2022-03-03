@@ -34,6 +34,9 @@ contract NFTMarket is
 	/* Sequence array of token IDs */
 	mapping(uint256 => uint256) private marketTokenIDs;
 
+	/* Sequence array of token IDs */
+	mapping(address => uint256[]) private marketTokenIDsByAddress;
+
 	event NewListingEvent (
 		address indexed nftContract,
 		uint256 indexed tokenId,
@@ -72,7 +75,10 @@ contract NFTMarket is
 	) public payable nonReentrant {
 		require(price > 0, "Price must be at least 1 wei");
 
-		addMarketTokenIDs(tokenId);
+		_itemIds.increment();
+
+		uint currentItemId = _itemIds.current();
+		marketTokenIDs[currentItemId] = tokenId;
 	
 		marketItems[tokenId] =  MarketItem(
 			nftContract,
@@ -82,6 +88,7 @@ contract NFTMarket is
 			price,
 			false
 		);
+		addMarketTokenIdByAddress(msg.sender, tokenId);
 
 		DauDQNFT(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
@@ -112,7 +119,9 @@ contract NFTMarket is
 		require(marketItems[tokenId].sold == false, "Item sold. Can not cancel listing!");
 
 		DauDQNFT(nftContract).transferFrom(address(this), msg.sender, tokenId);
-		removeMarketTokenIDs(tokenId);
+		
+		removeMarketTokenIdByAddress(tokenId);
+		remove(tokenId);
 
 		emit CancelListingEvent(
 			nftContract,
@@ -132,9 +141,11 @@ contract NFTMarket is
 
 		payable(marketItems[tokenId].seller).transfer(msg.value);
 		DauDQNFT(nftContract).transferFrom(address(this), msg.sender, tokenId);
-
-		removeMarketTokenIDs(tokenId);
 		
+		removeMarketTokenIdByAddress(tokenId);
+		addMarketTokenIdByAddress(msg.sender, tokenId);
+		remove(tokenId);
+
 		emit PurchasedListingEvent(nftContract, tokenId, msg.sender, marketItems[tokenId].seller, price, priceTax);
 	}
 
@@ -156,38 +167,26 @@ contract NFTMarket is
 		return items;
 	}
 
+	function test() public view returns (uint256[] memory) {
+		return marketTokenIDsByAddress[msg.sender];
+	}
+
 	function fetchMyNFTsListingOnMarket() public view returns (MarketItem[] memory) {
-		uint totalItemCount = _itemIds.current();
-		uint itemCount = 0;
+		uint[] memory tokenIdsCurrentAddress = marketTokenIDsByAddress[msg.sender];
+		uint currentIndex = 0;
 		uint tokenId = 0;
 
-		for (uint i = 1; i <= totalItemCount; i++) {
-			tokenId = marketTokenIDs[i];
-			if (marketItems[tokenId].seller == msg.sender) {
-				itemCount += 1;
-			}
-		}
-
-		MarketItem[] memory items = new MarketItem[](itemCount);
-		if (itemCount >= 1) {
-			for (uint i = 1; i <= itemCount; i++) {
-				tokenId = marketTokenIDs[i];
-				if (marketItems[tokenId].seller == msg.sender) {
-					MarketItem storage currentItem = marketItems[tokenId];
-					items[i - 1] = currentItem;
-				}
-			}
+		MarketItem[] memory items = new MarketItem[](tokenIdsCurrentAddress.length);
+		for (uint i = 1; i <= tokenIdsCurrentAddress.length; i++) {
+			tokenId = tokenIdsCurrentAddress[i];
+			MarketItem storage currentItem = marketItems[tokenId];
+			items[currentIndex] = currentItem;
+			currentIndex += 1;
 		}
 		return items;
 	}
 
-	function addMarketTokenIDs(uint tokenId) private {
-		_itemIds.increment();
-		uint currentItemId = _itemIds.current();
-		marketTokenIDs[currentItemId] = tokenId;
-	}
-
-	function removeMarketTokenIDs(uint tokenId) private {
+	function remove(uint tokenId) private {
 		uint totalItemCount = _itemIds.current();
 
 		for (uint i = 1; i < totalItemCount; i++) {
@@ -213,5 +212,25 @@ contract NFTMarket is
 			}
 		}
         delete marketTokenIDs[totalItemCount];
+	}
+
+	function addMarketTokenIdByAddress(address to, uint256 tokenId) private{
+		marketTokenIDsByAddress[to].push(tokenId);
+	}
+
+	function removeMarketTokenIdByAddress (uint256 tokenId) public returns (uint) {
+		address to = marketItems[tokenId].seller;
+		uint length = marketTokenIDsByAddress[to].length;
+		uint data_test = 0;
+		
+		for (uint i = 0; i < length; i++){
+			if (marketTokenIDsByAddress[to][i] == tokenId) {
+				marketTokenIDsByAddress[to][i] = marketTokenIDsByAddress[to][length - 1];
+				marketTokenIDsByAddress[to].pop();
+				data_test = marketTokenIDsByAddress[to][i];
+			}
+		}
+
+		return data_test;
 	}
 }
