@@ -163,8 +163,9 @@ contract NFTMarket is
 		uint itemCount = 0;
 		uint tokenId = 0;
 
-		for (uint i = 0; i < totalItemCount; i++) {
-			if (marketItems[i + 1].seller == msg.sender) {
+		for (uint i = 1; i <= totalItemCount; i++) {
+			tokenId = marketTokenIDs[i];
+			if (marketItems[tokenId].seller == msg.sender) {
 				itemCount += 1;
 			}
 		}
@@ -174,7 +175,7 @@ contract NFTMarket is
 			for (uint i = 1; i <= itemCount; i++) {
 				tokenId = marketTokenIDs[i];
 				if (marketItems[tokenId].seller == msg.sender) {
-					MarketItem storage currentItem = marketItems[i];
+					MarketItem storage currentItem = marketItems[tokenId];
 					items[i - 1] = currentItem;
 				}
 			}
