@@ -39,8 +39,7 @@ function ProductCard({ params, type, current_wallet = '', web3, marketContract, 
     }
 
     const onSubmitSellNFT = async (e) => {
-        console.log(params.tokenId, priceSell)
-        if (priceSell > 0) {
+        if (priceSell > 0 && params.tokenId > 0) {
             await AddNewListing(marketContract, web3, params.tokenId, priceSell)
         } else {
             alert('Price > 0');
@@ -49,7 +48,7 @@ function ProductCard({ params, type, current_wallet = '', web3, marketContract, 
     }
 
     const onSubmitUpdatePriceNFT = async (e) => {
-        if (priceSell > 0) {
+        if (priceSell > 0 && params.tokenId > 0) {
             await UpdateListing(marketContract, web3, params.tokenId, priceSell)
         } else {
             alert('Price > 0')
@@ -58,13 +57,21 @@ function ProductCard({ params, type, current_wallet = '', web3, marketContract, 
     }
 
     const onSubmitBuyNFT = async () => {
-        await BuyNFT(marketContract, web3, params.tokenId, params.price)
-        alert('Please wait confirmation from Metamask');
+        if (params.tokenId > 0) {
+            let result = await BuyNFT(marketContract, web3, params.tokenId, params.price);
+            if (result) {
+                alert('Please wait confirmation from Metamask');
+            }
+        }
     }
 
     const onSubmitCancelSellNFT = async () => {
-        await CancelListing(marketContract, web3, params.tokenId)
-        alert('Please wait confirmation from Metamask');
+        if (params.tokenId > 0) {
+            let result = await CancelListing(marketContract, web3, params.tokenId)
+            if (result) {
+                alert('Please wait confirmation from Metamask');
+            }
+        }
     }
 
     const handleButtonWithType = () => {

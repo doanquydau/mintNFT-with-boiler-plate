@@ -75,7 +75,9 @@ function AddProduct() {
             console.log(response);
             let result;
             for (let index = 1; index <= quantity; index++) {
-                result = await MintNFT(nftContract, web3, response.metaDataUrl);
+                if (response.metaDataUrl !== '' && response.metaDataUrl !== null) {
+                    result = await MintNFT(nftContract, web3, response.metaDataUrl);
+                }
             }
             if (result.status === true || result.status === 'true') {
                 alert('Success');

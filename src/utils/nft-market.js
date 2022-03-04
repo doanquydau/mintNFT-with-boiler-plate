@@ -14,51 +14,69 @@ const YourNFTsListing = async (marketContract) => {
     return await marketContract.methods.fetchMyNFTsListingOnMarket().call();
 }
 
-const AddNewListing = async (marketContract, web3, tokenID, price) => {
+const AddNewListing = async (marketContract, web3, tokenId, price) => {
     let priceToWei = web3.utils.toWei(price.toString(), 'ether');
-
-    const tx = {
-        'from': ethereum.selectedAddress,
-        'to': MARKET_CONTRACT,
-        "gasPrice": web3.utils.toHex(Number(GAS_PRICE) * Math.pow(10, 9)),
-        "gasLimit": web3.utils.toHex(500000), // fixed gasLimit
-        "value": web3.utils.toHex(0), // fixed gasLimit
-        'data': marketContract.methods.addListing(NFT_CONTRACT, tokenID, priceToWei).encodeABI(),
-    };
-    return await confirmMetamask(tx);
+    if (tokenId > 0 ) {
+        const tx = {
+            'from': ethereum.selectedAddress,
+            'to': MARKET_CONTRACT,
+            "gasPrice": web3.utils.toHex(Number(GAS_PRICE) * Math.pow(10, 9)),
+            "gasLimit": web3.utils.toHex(500000), // fixed gasLimit
+            "value": web3.utils.toHex(0), // fixed gasLimit
+            'data': marketContract.methods.addListing(NFT_CONTRACT, tokenId, priceToWei).encodeABI(),
+        };
+        return await confirmMetamask(tx);
+    } else {
+        alert('Token ID invalid');
+        return false;
+    }
 }
 
-const UpdateListing = async (marketContract, web3, tokenID, price) => {
+const UpdateListing = async (marketContract, web3, tokenId, price) => {
     let priceToWei = web3.utils.toWei(price.toString(), 'ether');
-
-    const tx = {
-        'from': ethereum.selectedAddress,
-        'to': MARKET_CONTRACT,
-        "value": web3.utils.toHex(0), // fixed gasLimit
-        'data': marketContract.methods.updateListing(tokenID, priceToWei).encodeABI(),
-    };
-    return await confirmMetamask(tx);
+    if (tokenId > 0 ) {
+        const tx = {
+            'from': ethereum.selectedAddress,
+            'to': MARKET_CONTRACT,
+            "value": web3.utils.toHex(0), // fixed gasLimit
+            'data': marketContract.methods.updateListing(tokenId, priceToWei).encodeABI(),
+        };
+        return await confirmMetamask(tx);
+    } else {
+        alert('Token ID invalid');
+        return false;
+    }
 }
 
-const CancelListing = async (marketContract, web3, tokenID) => {
-    const tx = {
-        'from': ethereum.selectedAddress,
-        'to': MARKET_CONTRACT,
-        "value": web3.utils.toHex(0), // fixed gasLimit
-        'data': marketContract.methods.cancelListing(NFT_CONTRACT, tokenID).encodeABI(),
-    };
-    return await confirmMetamask(tx);
+const CancelListing = async (marketContract, web3, tokenId) => {
+    if (tokenId > 0 ) {
+        const tx = {
+            'from': ethereum.selectedAddress,
+            'to': MARKET_CONTRACT,
+            "value": web3.utils.toHex(0), // fixed gasLimit
+            'data': marketContract.methods.cancelListing(NFT_CONTRACT, tokenId).encodeABI(),
+        };
+        return await confirmMetamask(tx);
+    } else {
+        alert('Token ID invalid');
+        return false;
+    }
 }
 
-const BuyNFT = async (marketContract, web3, itemID, price) => {
+const BuyNFT = async (marketContract, web3, tokenId, price) => {
     console.log(price.toString())
-    const tx = {
-        from: ethereum.selectedAddress,
-        to: MARKET_CONTRACT,
-        value: web3.utils.toHex(price.toString()),
-        data: marketContract.methods.buyItem(NFT_CONTRACT, itemID).encodeABI(),
-    };
-    return await confirmMetamask(tx);
+    if (tokenId > 0 ) {
+        const tx = {
+            from: ethereum.selectedAddress,
+            to: MARKET_CONTRACT,
+            value: web3.utils.toHex(price.toString()),
+            data: marketContract.methods.buyItem(NFT_CONTRACT, tokenId).encodeABI(),
+        };
+        return await confirmMetamask(tx);
+    } else {
+        alert('Token ID invalid');
+        return false;
+    }
 }
 
 const confirmMetamask = async (tx) => {

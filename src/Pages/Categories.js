@@ -50,6 +50,7 @@ function Categories( ) {
         
                     if (isMounted) {
                         let your_nfts = await NFTsByOwner(nftContract, accounts[0]);
+                        console.log(your_nfts);
                         your_nfts = await Promise.all(your_nfts.map(async it_tokenId => {
                             let tokenUri = await getTokenUri(nftContract, it_tokenId)
                             let item = {
@@ -61,11 +62,18 @@ function Categories( ) {
                         setProducts(your_nfts)
 
                         let your_listing = await YourNFTsListing(marketContract);
+                        console.log(your_listing)
                         your_listing = await Promise.all(your_listing.map(async it_listing => {
-                            let tokenUri = await getTokenUri(nftContract, it_listing.tokenId)
                             let item = {
-                                tokenId: it_listing.tokenId.toString(),
-                                tokenUri
+                                tokenId: it_listing.tokenId.toString()
+                            };
+                            if (it_listing.tokenId !== '0') {
+                                let tokenUri = await getTokenUri(nftContract, it_listing.tokenId)
+                                console.log(it_listing.tokenId !== '0')
+                                item = {
+                                    tokenId: it_listing.tokenId.toString(),
+                                    tokenUri
+                                }
                             }
                             return item
                         }));
