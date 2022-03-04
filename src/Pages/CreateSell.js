@@ -16,6 +16,7 @@ require('dotenv').config();
 
 function AddProduct() {
     const [submitForm, setSubmitForm] = useState(false);
+    const [quantity, setQuantity] = useState('');
     const [nftImage, setNftImage] = useState('');
     const [nftTitle, setNftTitle] = useState('');
     const [nftDescription, setNftDescription] = useState('');
@@ -55,7 +56,10 @@ function AddProduct() {
                 setNftDescription(e.target.value);
                 console.log('set description');
                 break;
-        
+            case 'quantity':
+                setQuantity(e.target.value);
+                console.log('set quantity');
+                break;
             default:
                 break;
         }
@@ -69,8 +73,10 @@ function AddProduct() {
         setSubmitForm(true);
         uploadFileToIPFS(nftImage, nftTitle, nftDescription).then(async (response) => {
             console.log(response);
-            let result = await MintNFT(nftContract, web3, response.metaDataUrl);
-            console.log(result);
+            let result;
+            for (let index = 1; index <= quantity; index++) {
+                result = await MintNFT(nftContract, web3, response.metaDataUrl);
+            }
             if (result.status === true || result.status === 'true') {
                 alert('Success');
             }
@@ -83,6 +89,12 @@ function AddProduct() {
             <div className='container'>
                 <h1 className="heading">Add a Product</h1>
                 {/* <Form onSubmit={onSubmitHandler()}> */}
+                    <Form.Row>
+                        <Form.Group as={Col} controlId="formGridTitle">
+                            <Form.Label>quantity</Form.Label>
+                            <Form.Control type="number" placeholder="Enter quantity" name="quantity" min="1" required onChange={(e) => {onChangeHandler(e, 'quantity')}} />
+                        </Form.Group>
+                    </Form.Row>
                     <Form.Row>
                         <Form.Group as={Col} controlId="formGridTitle">
                             <Form.Label>Title</Form.Label>
