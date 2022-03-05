@@ -71,7 +71,7 @@ function AddProduct() {
             return false;
         }
         setSubmitForm(true);
-        uploadFileToIPFS(nftImage, nftTitle, nftDescription).then(async (response) => {
+        uploadFileToIPFS(nftImage, nftTitle + ' ' + (Math.floor((Math.random() * quantity) + 1)), nftDescription).then(async (response) => {
             console.log(response);
             let result;
             for (let index = 1; index <= quantity; index++) {
