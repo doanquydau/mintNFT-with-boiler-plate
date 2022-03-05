@@ -140,12 +140,12 @@ contract NFTMarket is
 
 	/* Returns all unsold market items */
 	function fetchMarketItems() public view returns (MarketItem[] memory) {
-		uint itemCount = _itemIds.current();
+		uint totalItemCount = _itemIds.current();
 		uint currentIndex = 0;
 		uint tokenId = 0;	
 
-		MarketItem[] memory items = new MarketItem[](itemCount);
-		for (uint i = 1; i <= itemCount; i++) {
+		MarketItem[] memory items = new MarketItem[](totalItemCount);
+		for (uint i = 1; i <= totalItemCount; i++) {
 			tokenId = marketTokenIDs[i];
 			if (marketItems[tokenId].owner == address(this)) {
 				MarketItem storage currentItem = marketItems[tokenId];
@@ -159,6 +159,7 @@ contract NFTMarket is
 	function fetchMyNFTsListingOnMarket() public view returns (MarketItem[] memory) {
 		uint totalItemCount = _itemIds.current();
 		uint itemCount = 0;
+		uint currentIndexItem = 0;
 		uint tokenId = 0;
 
 		for (uint i = 1; i <= totalItemCount; i++) {
@@ -169,13 +170,12 @@ contract NFTMarket is
 		}
 
 		MarketItem[] memory items = new MarketItem[](itemCount);
-		if (itemCount >= 1) {
-			for (uint i = 1; i <= itemCount; i++) {
-				tokenId = marketTokenIDs[i];
-				if (marketItems[tokenId].seller == msg.sender) {
-					MarketItem storage currentItem = marketItems[tokenId];
-					items[i - 1] = currentItem;
-				}
+		for (uint i = 0; i <= totalItemCount; i++) {
+			tokenId = marketTokenIDs[i + 1];
+			if (marketItems[tokenId].seller == msg.sender) {
+				MarketItem storage currentItem = marketItems[tokenId];
+				items[currentIndexItem] = currentItem;
+				currentIndexItem += 1;
 			}
 		}
 		return items;
