@@ -71,47 +71,49 @@ function AddProduct() {
             return false;
         }
         setSubmitForm(true);
-        uploadFileToIPFS(nftImage, nftTitle + ' ' + (Math.floor((Math.random() * quantity) + 1)), nftDescription).then(async (response) => {
-            console.log(response);
-            let result;
-            for (let index = 1; index <= quantity; index++) {
-                if (response.metaDataUrl !== '' && response.metaDataUrl !== null) {
-                    result = await MintNFT(nftContract, web3, response.metaDataUrl);
+        let result;
+        let token_data = {};
+        for (let index = 1; index <= quantity; index++) {
+            token_data = await uploadFileToIPFS(nftImage, nftTitle + ' ' + index, nftDescription);
+            if (token_data.metaDataUrl !== null && token_data.metaDataUrl !== '') {
+                result = await MintNFT(nftContract, web3, token_data.metaDataUrl);
+                if (result.status === true || result.status === 'true') {
+                    console.log('Success - ' + index);
                 }
             }
-            if (result.status === true || result.status === 'true') {
-                alert('Success');
-            }
-            setSubmitForm(false);
-        });
+        }
+        if (result.status === true || result.status === 'true') {
+            alert('Success');
+        }
+        setSubmitForm(false);
     }
 
     return (
         <>
             <div className='container'>
-                <h1 className="heading">Add a Product</h1>
+                <h1 className="heading">Mint a NFT</h1>
                 {/* <Form onSubmit={onSubmitHandler()}> */}
                     <Form.Row>
                         <Form.Group as={Col} controlId="formGridTitle">
-                            <Form.Label>quantity</Form.Label>
-                            <Form.Control type="number" placeholder="Enter quantity" name="quantity" min="1" required onChange={(e) => {onChangeHandler(e, 'quantity')}} />
+                            <Form.Label>Quantity<sup className="text-danger">*</sup> (Amount NFTs wanna mint)</Form.Label>
+                            <Form.Control type="number" placeholder="Enter quantity" name="quantity" min="1" required onChange={(e) => {onChangeHandler(e, 'quantity')}}/>
                         </Form.Group>
                     </Form.Row>
                     <Form.Row>
                         <Form.Group as={Col} controlId="formGridTitle">
-                            <Form.Label>Title</Form.Label>
-                            <Form.Control type="text" placeholder="Enter title" name="title" required onChange={(e) => {onChangeHandler(e, 'title')}} />
+                            <Form.Label>Title<sup className="text-danger">*</sup></Form.Label>
+                            <Form.Control type="text" placeholder="Enter title" name="title" required onChange={(e) => {onChangeHandler(e, 'title')}}/>
                         </Form.Group>
                     </Form.Row>
 
                     <Form.Group controlId="formGridDescription.ControlTextarea1">
-                        <Form.Label>Description</Form.Label>
+                        <Form.Label>Description<sup className="text-danger">*</sup></Form.Label>
                         <Form.Control as="textarea" rows={3} name="description" required onChange={(e) => {onChangeHandler(e, 'description')}} />
                     </Form.Group>
 
                     <Form.Row>
                         <Form.Group as={Col} controlId="formGridImage" >
-                            <Form.Label>Image</Form.Label>
+                            <Form.Label>Image<sup className="text-danger">*</sup></Form.Label>
                             <Form.Control name="image" accept="image/*" type="file" required onChange={(e) => {onChangeHandler(e, 'image')}} />
                         </Form.Group>
                     </Form.Row>
